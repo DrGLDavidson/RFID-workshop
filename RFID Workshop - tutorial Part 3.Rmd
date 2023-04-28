@@ -1,0 +1,97 @@
+---
+title: "RFIDworkshop tutorial Part 3"
+author: "Gabrielle Davidson"
+date: "2023-04-18"
+output: html_document
+---
+## 1. Functions
+
+Perform operations in the programming language. Can contain multiple interrelated statements that are run together in a predefined order when the function is called. These are built-in or created by the user. 
+
+we can create a function using this syntax:
+
+functionName<-function(parameters){
+function body
+}
+
+```{r}
+myFunction<-function(x, y){
+  x+y
+}
+
+myFunction(5,3)
+
+myFunction(12,35)
+
+```
+### 1.2 Create your own functions
+Functions may be beneficial if you have multiple dataframes to run through the same code, and instead of copying and pasting and replacing the name of the dataframe, you can create a function and set the dataframe name as a paramenter. 
+```{r}
+#set working directory to folder with nestbox data 
+setwd("F:/RWorkspace/RFIDworkshop/nestboxData")
+
+
+```
+
+```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
+#load the following packages
+library(tidyverse)
+library(rmarkdown)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(stringi)
+library(magrittr)
+
+```
+
+Lets make a simple function to count how many visits per RFID within a dataframe
+```{r}
+
+df1<-read.delim(file="C1254RT_visitIntervals.txt", sep="\t", header=TRUE)  
+names(df1)
+
+countVisits<-function(myDF){
+  myDF%>%
+    count(RFID, sort=TRUE)
+}
+
+countVisits(df1)
+
+```
+
+### **1.2 EXERCISE** 
+using the nestbox file C1254RT_visitIntervals.txt, create a function that extracts the Latency from the reference tag, with the option to set the parameter as the row that has the reference tag start of interest. Go back to tutorial 2 section 2.3 visit frequency summaries. Try and include within the function changing the relevant columns to date/time
+
+```{r, echo=F}
+df2<-read.delim(file="C1254RT_visitIntervals.txt", sep="\t", header=TRUE)  
+names(df2)
+
+LatencyFunction<- function(myDF, RefTagrownum) myDF%>%
+  mutate(Date=ymd_hms(Date))%>%
+  arrange(Date)%>%
+  mutate(latency = Date - Date[row_number() == RefTagrownum])%>%
+  group_by(RFID)%>%
+  slice(1)%>%
+  ungroup()
+
+LatencyFunction(myDF=df2, RefTagrownum=2)
+
+LatencyFunction(myDF=df2, RefTagrownum=3)
+
+LatencyFunction(myDF=df2, RefTagrownum=1)
+
+```
+
+
+### **2.1 ADVANCED EXERCISE** 
+using the feeder data, create a function that filters out your reads with a parameter that allows you to specify the number of seconds as your cut off for considering multiple visits a single visit. 
+
+# END OF FEEDER RFID TUTORIAL 
+
+```{r}
+sessionInfo()
+```
+
+
