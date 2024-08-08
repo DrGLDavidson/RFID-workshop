@@ -1,0 +1,88 @@
+---
+title: "1. RFID Tutorial: requirements and resources"
+author: "Gabrielle Davidson"
+date: "2024-08-08"
+output: html_document
+---
+
+### 1.1 Installations
+Downlaod the latest version of **[R](https://cran.r-project.org/bin/)**  and **[R Studio](https://posit.co/download/rstudio-desktop/)** according to your operating system. Be sure to install R before installing R studio.
+
+
+
+```{r eval=FALSE}
+#Open Rstudio and install the following packages
+install.packages("tidyverse")
+install.packages("rmarkdown")
+install.packages("dplyr")
+install.packages("tidyr")
+install.package("tidyverse")
+install.packages("lubridate")
+install.packages("ggplot2")
+install.packages("stringi")
+install.packages("magrittr")
+
+#If you receive errors, search them on google or ask chatgpt. 
+#Sometimes the error message will specify a package that could not be installed or is out of date. 
+#Attempt to install missing packages before installing the package(s) above. 
+#Make sure your R version is up to date and that it was installed prior to installing/updating r studio
+```
+### 1.2 Check R packages installed by loading them
+```{r eval=FALSE}
+#load the above packages to check they installed properly 
+library(tidyverse)
+library(rmarkdown)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(stringi)
+library(magrittr)
+
+```
+
+### 1.3 Download raw datasets necessary for the tutorial and save them in a workspace folder
+Download the resources from **[my github page](https://github.com/DrGLDavidson/TOBEUPDATED)**
+
+Create and name a workspace. This is a folder on your computer that tells R where to obtain files. 
+
+### 1.4 Download useful R cheat sheets
+
+[R Markdown Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+
+[dplyr Cheat Sheet](https://gauss.inf.um.es/tabular/www/data-transformation.pdf)
+
+[dplyr and tidyr Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
+
+[lubridate Cheat Sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf)
+
+### 1.5 Useful literature
+
+# Davidson papers using RFID to measure behaviour in wild great tits and blue tits at feeders and nestboxes: 
+
+[Multiple factors affect discrimination learning performance, but not between-individual variation, in wild mixed-species flocks of birds](https://doi.org/10.1098/rsos.192107)
+
+[Episodic-like memory in wild free-living blue tits and great tits](https://doi.org/10.1016/j.cub.2024.06.029)
+
+[Inhibitory control performance is repeatable over time and across contexts in a wild bird population](https://doi.org/10.1016/j.anbehav.2022.02.007)
+
+# Other groups using RFID to measure behaviour in alternative ways: 
+
+[Inferring dominance interactions from automatically recorded temporal data](https://doi.org/10.1111/eth.12720)
+
+[Individual variation in spatial memory performance in wild mountain chickadees from different elevations](https://doi.org/10.1016/j.anbehav.2015.10.015)
+
+[Spatial, temporal and individual-based differences in nest-site visits and subsequent reproductive success in wild great tits]( https://doi.org/10.1111/jav.01740)
+
+# General autonomous data collection methodology and approaches: 
+
+[Broad-scale applications of the Raspberry Pi: A review and guide for biologists](https://doi.org/10.1111/2041-210X.13652) 
+
+[The OpenFeeder: A flexible automated RFID feeder to measure interspecies and intraspecies differences in cognitive and behavioural performance in wild birds](https://doi.org/10.1111/2041-210X.13931)
+
+[An Arduino-Based RFID Platform for Animal Research](https://doi.org/10.3389/fevo.2019.00257) 
+
+[Shazam for bats: Internet of Things for continuous real-time biodiversity monitoring](https://doi.org/10.1049/smc2.12016)
+
+[Shazam for bats: Internet of Things for continuous real-time biodiversity monitoring](https://doi.org/10.1049/smc2.12016)
