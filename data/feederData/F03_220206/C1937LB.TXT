@@ -1,0 +1,4 @@
+F 	Date            	Hmsec 	ID   	Event 	Line1 	Tag1 	Line2 	Tag2 	Line3 	Tag3 	Line4 	Tag4 	Line5 	Tag5 	Line6 	Tag6
+D 	1792-11-14 20:39:13	 741 	c1937 	   16  	  1 	0700EDB5B4 	 	0000000000 	  2 	0000000000 	 	0000000000 	  3 	0000000000 	 	0000000000
+T 	2022-02-04 09:14:25	 543 	c1937 	 2737 
+S

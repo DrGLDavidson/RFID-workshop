@@ -1,0 +1,4 @@
+F 	Date            	Hmsec 	ID   	Event 	Line1 	Tag1 	Line2 	Tag2 	Line3 	Tag3 	Line4 	Tag4 	Line5 	Tag5 	Line6 	Tag6
+D 	2022-02-07 10:26:32	 437 	c1931 	15665  	  1 	01103FE70C 	 	01103F3BED 	  2 	0300024FEF 	 	0300030EFF 	  3 	01103FDF3E 	 	0000000000
+T 	2022-02-07 10:26:34	 908 	c1931 	15665 
+S

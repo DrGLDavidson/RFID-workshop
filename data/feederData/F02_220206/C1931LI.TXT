@@ -1,0 +1,4 @@
+F 	Date            	Hmsec 	ID   	Event 	   id	 mode	netID 	Command 	Status 	Event 	EHist 	Owner 	NextOwner 	Reversal 	 Tag 	date_time
+D 	1792-12-31 12:30:03	1019 	c1931 	    0 	c1931 	    0 	    0 	    7 	 1010000 	15521 	15511 	c1931 	c0 	  0 	00000000000000000000 	2022-02-04 09:12:43
+T 	2022-02-04 09:12:43	 993 	c1931 	15521 
+S

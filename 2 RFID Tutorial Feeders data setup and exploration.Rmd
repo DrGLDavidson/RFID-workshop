@@ -1,5 +1,5 @@
 ---
-title: "2. RFID Tutorial: Introduction to RFID use and data"
+title: "2. RFID Tutorial: Introduction to RFID use and data handling"
 author: "Gabrielle Davidson"
 date: "2023-04-18"
 output: html_document
@@ -24,7 +24,7 @@ library(magrittr)
 ### Download resources necessary for the workshop
 Download the resources from **[my github page](https://github.com/DrGLDavidson/TOBEUPDATED)**
 
-## 2. Introduction to RFID for animal behaviour
+## 2.1 Introduction to RFID for animal behaviour
 
 **Considerations when designing RFID devices:** 
 
@@ -67,37 +67,91 @@ In both cases, and especially in Option 2, there is a risk that you accidentally
 
 Another option is to create an R function. This means you specify arguments (e.g. file names, dataframes) at the top of the function, rather than editing multiple lines of code to accommodate the appropriate files/dataframes. The latter can lead to errors if you don't update one or more of the dataframe or file names accordingly. 
 
-## 2. Importing RFID data and generating master database
+## 2.2 Importing RFID data and generating master database
 
-### 2.1 upload data 
-- imagine this is in real time during the field season as data is coming in every few days
+### 2.2.1 working directory and files
+# Imagine you have collected data from three RFID feeders deployed in the field. When you save the data from the SD card, you save it according to the date you collected it, and the feeder ID (in this case F01, F02, F03)
 
 ```{r}
 #set working directory so R knows where to find and save data
-setwd("F:/RWorkspace/RFIDworkshop/feederData")
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
 
-#upload a file from RFID feeder 01 and call it df1
-df1<-read.table(file="F01_200117.txt", sep="\t", header=TRUE, colClasses=c(timeDate ='character'))  
-#colClasses=() is an argument to ensure the leading zero of the timeDate column is retained. This may not be necessary depending on the data output you have
-#check the header names
-names(df1)
-#note that chNtimeDate25 refers to the output from the RFID device as it includes the "channel number" and date in a single column. #my understanding is your RFID data output will only include timeDate and RFID, so this column can be ignored/filtered. 
+#specify the working directly as the object "path"
 
-#now upload another file from RFID feeder 01 and call if df2
-df2<-read.table(file="F01_200121.txt", sep="\t", header=TRUE, colClasses=c(timeDate ='character'))
-names(df2)
+path<-"F:/RWorkspace/GitHub/RFID-workshop/data/feederData"
 
-#now upload another file from RFID feeder 02 and call if df3
-df3<-read.table(file="F02_200117.txt", sep="\t", header=TRUE, colClasses=c(timeDate ='character'))
-names(df3)
+#use the function list.dirs to see all the folders in your directory
+list.dirs(path, full.names = TRUE, recursive = TRUE)
 
-#now upload another file from RFID feeder 02 and call if df4
-df4<-read.table(file="F02_200122.txt", sep="\t", header=TRUE, colClasses=c(timeDate ='character'))
-names(df4)
+#now use the function list.files to see what files are in that folder and all subfolders (recursive=TRUE). 
+list.files(path, pattern=NULL, all.files=FALSE,
+    full.names=FALSE, recursive = TRUE)
+
+#now use the function to look into one of the subfolders
+
+path2<-"F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F01_220206"
+list.files(path2, pattern=NULL, all.files=FALSE,
+    full.names=FALSE, recursive = TRUE)
 
 ```
 
+# what you are seeing are a number of files that start with a alphanumberic code, followed by two letters. "C1935" refers to the feeder's hardware ID code. This can never change. The last two letters refer to the output file type. For example, FD refers to "feeder door" and has information about whether the servo door opened (o) or stayed closed (c) upon detection of a bird. For our purposes, we will focus on the RT files only. 
+
+
+### 2.2.2 Viewing files and preparing for compiling them into a single dataframe
+
+```{r}
+
+#the files are text files so you need to use a function that calls .txt. files
+
+setwd(path2) #since we already created path2 as folder F01_220206, lets start with that.
+getwd() #double check you are now in the appropriate working directory
+
+# Call the RT file into your environment and call it df1 (dataframe 1)
+df1<-read.delim("C1935RT.txt", header=TRUE)
+
+names(df1) #see the column headers
+head(df1) # see the first few rows and headers
+
+```
+
+# what you are seeing are time stamped events every time the strain gauge perch is triggered. If there is an associated RFID tag read, it appears under the column header "TagID_hex". 
+# You can see the ID is c1935 which matches our folder name. Dur Clks Freq and Edges refer to some RFID parameters, which may be useful if there are any issues with detecting tags (there are lots of events without tags). 
+# the most important headers for downstream analyses are Date, Hmsec, ID and TagID_hex. But we will keep all headers.
+# you should notice that although we have the ID of the feeder, that does not provide us with any information about where the feeder was located in our experimental design which is FUNDAMENTAL to analyses. If you are to compile a dataframe that contains data from multiple different feeders, you must know which data comes from which feeder. 
+
+### 2.2.3 Adding a column to indicate which feeder your data belongs to 
+
+```{r}
+
+#first look at your df1 in your global environment. It should say 337 obs. (observations) of 15 variables. 
+
+df1<-cbind(df1, feeder='F01') #add a column named feeder and have all the values as F01
+
+#now df1 should say 16 variables. But do a sanity check:
+
+head(df1)
+
+```
+
+
 - you now have a situation where you have four different data frames (dfx) that come from two different feeders, but there is nothing in the df to indicate what feeder they belong to.
+```{r}
+#Imagine you want to have all the sunheart RT files as a single .txt file over all the days you took the data (e.g. the sunheart folder with all the different dated subfolders):
+
+path<-"F:/Work/www/sunhearts"  ###insert your own path - this is the main folder that contains all the feeder files for each date, but within the specific feeder type (e.g. sunhearts). 
+RTfiles<-list.files(path, pattern = "RT", recursive = TRUE) ###create a list of all the files in that folder and subfolders (recursive =T) that contain "RT" in the filename
+Sunhearts<-lapply(RTfiles, read.delim)  ###upload all those files into R
+class(Sunhearts)  ##it uploads as a list which isn't helpful yet
+df <- dplyr::bind_rows(Sunhearts)  ###this binds all the files into a dataframe
+Sunhearts<-cbind(df, feeder='sunhearts')  ###add a column called "sunhearts" so you know that comes from the sunheart treatment, and in case you want to bind  sunhearts, gravel and peanut into a single dataframe.  
+write.table(Sunhearts, file = "Sunhearts_Allfiles.txt",sep="\t",row.names=FALSE)  
+
+##repeat for Peanut and Gravel.
+SPG<-bind_rows(Sunhearts,Peanut,Gravel) ##optional combine them into a single dataframe. 
+
+```
+
 
 ```{r}
 #add a new column named "feeder" with information about what feeder it comes from 
