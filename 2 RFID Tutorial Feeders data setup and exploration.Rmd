@@ -17,8 +17,8 @@ library(dplyr)
 library(tidyr)
 library(lubridate)
 library(ggplot2)
-library(stringi)
-library(magrittr)
+library(stringi) #may not need this
+library(magrittr) #may not need this
 
 ```
 ### Download resources necessary for the workshop
@@ -70,7 +70,7 @@ Another option is to create an R function. This means you specify arguments (e.g
 ## 2.2 Importing RFID data and generating master database
 
 ### 2.2.1 working directory and files
-# Imagine you have collected data from three RFID feeders deployed in the field. When you save the data from the SD card, you save it according to the date you collected it, and the feeder ID (in this case F01, F02, F03)
+# Imagine you have collected data from three RFID feeders deployed in the field. When you save the data from the SD card, you save it according to the date you collected it (YYMMDD), and the feeder ID (in this case F01, F02, F03)
 
 ```{r}
 #set working directory so R knows where to find and save data
@@ -132,12 +132,61 @@ df1<-cbind(df1, feeder='F01') #add a column named feeder and have all the values
 
 head(df1)
 
+#we can repeat this for more feeders. We need to specify a new path and working directory, lets do that for feeder 2, with the same date. 
+
+path3<-"F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F02_220206"
+setwd(path3)
+
+#double check you are in the correct directory 
+getwd()
+#if you want to check the file names: 
+
+list.files(path3, pattern=NULL, all.files=FALSE,
+    full.names=FALSE, recursive = TRUE)
+
+df2<-read.delim("C1931RT.txt", header=TRUE)
+
+names(df2) #see the column headers
+head(df2) # see the first few rows and headers
+
+#this file has the same headers as df1. Lets add the feeder column and values. 
+
+df2<-cbind(df2, feeder='F02') #add a column named feeder and have all the values as F02
+names(df2) #see the column headers
+head(df2) # see the first few rows and headers
+
+#we can repeat this for the 3rd feeder too. We can also skip having to look in the directory by doing the following:
+
+path4<-"F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F03_220206"
+setwd(path4)
+
+RTfile<-list.files(path4, pattern = "RT")
+df3<-lapply(RTfile, read.delim) #this will appear as a list in your environment
+df3<-as.data.frame(df3) #turn it into a dataframe
+head(df3)
+df3<-cbind(df3, feeder='F03') #add a column named feeder and have all the values as F03
+
 ```
 
-
-- you now have a situation where you have four different data frames (dfx) that come from two different feeders, but there is nothing in the df to indicate what feeder they belong to.
+### 2.2.4 bind rows from different data frames into a single dataframes
 ```{r}
-#Imagine you want to have all the sunheart RT files as a single .txt file over all the days you took the data (e.g. the sunheart folder with all the different dated subfolders):
+#Because you have now indicated which feeder each line of data comes from, you can safely combine all dataframes into one. They all have the same number of headers, and the headers are spelled the same, so this can be done without any additional changes.
+
+d220206<-bind_rows(df1,df2,df3)  #I have named this according to the date of the folder these files came from. 
+
+#you should now see df123 in your environment and there should be 1526 observations
+
+377+780+369  #the combined number of observations from df1, df2 and df3 =1526, which is expected. 
+
+#you should now be able to do this for the other folder dated 220206. Because you may use a similar naming system, or copy and paste the code above and edit the code, it is good practice to remove the dataframes that are no longer needed. 
+
+rm(df1,df2,df3) #this should remove them from your environment. 
+
+#if you use the same naming system as before, you will then end up with a dataframe named d220209. 
+
+#bind rows for your dataframes from different dates
+
+dfinal<-bind_rows(d220206,d220209)  #the order of the dfs as arguments will determine the order in which they appear in the dataframe. You can change this, but you could here choose the most contemporary date to come second. 
 
 path<-"F:/Work/www/sunhearts"  ###insert your own path - this is the main folder that contains all the feeder files for each date, but within the specific feeder type (e.g. sunhearts). 
 RTfiles<-list.files(path, pattern = "RT", recursive = TRUE) ###create a list of all the files in that folder and subfolders (recursive =T) that contain "RT" in the filename
@@ -152,8 +201,33 @@ SPG<-bind_rows(Sunhearts,Peanut,Gravel) ##optional combine them into a single da
 
 ```
 
-
+### 2.2.5 Saving your work and returning to it later
 ```{r}
+
+#by default, R will save to your current working directory. So lets change it to a higher directory than we are currently in. Otherwise it may be hard to find which subfolder to save into. You could also create a folder specifically for saving into. 
+
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
+
+write.table(dfinal, file = "Masterdf_220209.txt",sep="\t",row.names=FALSE)  #we are saving the dataframe called dfinal as a txt file into our working directory 
+
+#you should be able to view this using the following code: 
+list.dirs(path = "F:/RWorkspace/GitHub/RFID-workshop/data/feederData", full.names = TRUE, recursive = FALSE) #notice that recursive has been changed to F as we only want to see what is in that particular folder, not subfolders. 
+
+#Save your R script, and if using github, update the current branch, generate a pull request and merge to your main branch. 
+#when you close R, it may ask you if you want to save the global environment. This means you can open that saved file with the data and values as you left off. You can select no if that's not relevant. But if you were in the middle of something and needed to stop, that is a useful option. 
+
+#If you would like to clear your global environment entirely. 
+rm(list = ls())
+
+#load your last working master dataframe to continue to add more incoming data, following the same steps above for new RT files. 
+
+
+
+#if you have closed R, you will need to specify the working directory
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
+masterdf<-read.delim("Masterdf_220209.txt", header=TRUE)
+head(masterdf)
+
 #add a new column named "feeder" with information about what feeder it comes from 
 df1<-cbind(df1, feeder='feeder01')  
 names(df1)
