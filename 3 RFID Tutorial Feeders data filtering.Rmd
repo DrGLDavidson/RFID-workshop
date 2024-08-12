@@ -1,0 +1,449 @@
+---
+title: "3. RFID Tutorial: Introduction to RFID data filtering"
+author: "Gabrielle Davidson"
+date: "2024-08-12"
+output: html_document
+---
+## 1. Get set up
+
+### Open R Studio
+
+### Check R packages installed
+```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
+#load the following packages
+library(tidyverse)
+library(rmarkdown)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(stringi) #may not need this
+library(magrittr) #may not need this
+
+```
+### Download resources necessary for the workshop
+Download the resources from **[my github page](https://github.com/DrGLDavidson/TOBEUPDATED)**
+
+## 3.1 Introduction to RFID for animal behaviour
+
+```{r}
+
+#choose the appropriate working directory
+
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
+
+#call your most recent dataset of merged feeder data. 
+
+masterdf<-read.delim("Masterdf_220209.txt", header=TRUE)
+head(masterdf)
+
+```
+
+
+### 3.4 Using R Markdown to keep track of your data importing and saving 
+Perhaps in the previous exercises you saved time by cutting and pasting previous code and changing the file names
+What if you changed the file name you saved to, but not the file name you uploaded, or vice versa? 
+What if you uploaded more data to merge it with an existing dataframe, and instead of copying and pasting your code (your document is getting rather large now), you decided to just write over previous code. 
+The latter is arguably not good practice, best to keep a record of every code you run. But there's still the posibility that along a long string of repetitive code, you lose track of what was done when. 
+R markdown is an excellent tool for keeping track of what you have done and sharing your code with others. 
+
+- In R studio go to File>New File> R Markdown...
+
+- Input a title and click ok. 
+
+- Delete all the default text except the title
+
+- On the top right hand corner of the R markdown window is a green sqare with a plus sign and "c". Click that arrow and chose r script
+
+- You can now write your r script in this gray area
+- Use the "#" below r script to leave yourself notes
+- write outside of the r script for headings or any other detail you want. 
+- click the Knit button on the top left hand side of the R markdown window and it will produce a document and save it to your working directory. 
+
+### **3.4 EXERCISE** 
+
+Using the code you produced earlier, create a short R Markdown file and knit it. 
+
+## 4. Data filtering
+
+### 4.1 remove misreads (i.e. erroneous RFID reads)
+
+```{r}
+#clear the global environment so we don't have any conflicts with the next steps 
+
+rm(list = ls(all.names = TRUE))
+#upload a list of your known RFID tag IDs (aka Passive integrative transponder tags)
+PIT<-read.csv(file="PITList_metadata.csv", header=TRUE)
+names(PIT)
+
+#upload the masterfile you created, or use the one in the folder
+df<-read.table(file="Tutorial230427MasterDatabase_feeders_2020FieldSeason.txt", sep="\t", header=TRUE, colClasses=c(timeDate ='character'))
+names(df)
+
+#merge dataframes by their shared RFID and rename missing data with "NA"
+df1 <- merge(df, PIT, by = "RFID", all = TRUE)
+df1[is.na(df1)] <- "NA"  
+
+#create a dataframe of RFID reads that did not match with a known bird from our PIT dataframe
+misreads<-df1%>%
+  filter(btoRing=="NA") 
+
+##create a list of RFID reads that did not have a match 
+
+uniqueMisreads <- unique(misreads$RFID)
+
+uniqueMisreads<-as.data.frame(uniqueMisreads)
+
+##This is a manageable list of RFID errors and there are several that look like genuine RFID tags. I'm going to save this list and cross-reference my ID database to make sure I haven't missed any from the PITList_metadata file. 
+
+#save your misreads for your records
+
+write.csv(uniqueMisreads, file="uniqueMisreadsFeeders.csv")
+
+#assuming we have resolved this, lets merge the master RFID database with our PITList and remove NAs from the btoRing column
+
+df2<-dplyr::left_join(df, PIT ,by ="RFID")
+
+df2<-df2[!is.na(df2$btoRing),]
+
+write.table(df2, file = "200123MasterDatabase_feeders_2020FieldSeason_NoMisreads.txt",sep="\t",row.names=FALSE) 
+
+```
+
+### 4.2 Filter repetitive RFID reads within a single visit
+
+```{r}
+#first we need to make the time column in a time format
+class(df2$timeDate)
+#it appears that throughout our data wrangling the files have dropped the zero in front of some of the values in the column timeDate, which is the following digits: 2xsec, 2xmin, 2xhour 2xcalendar day, 2xmonth, 2xyear.
+#to rectify this, we will create a new column from the chNtimeDate25 column. This may not be relevant to your RFID output
+names(df2)[names(df2) == "timeDate"] <- "oldtimeDate" 
+df2$chNtimeDate<-str_replace_all(df2$chNtimeDate,fixed(" "), "")  ###remove spaces
+df2$timeDate<-substring(df2$chNtimeDate, nchar(as.character(df2$chNtimeDate))- 11) 
+# Extract information for year, month, day etc. from timeDate column
+df2$year <- stri_sub(df2$timeDate,-2,-1)
+df2$year <- paste(df2$year,'20', sep='')
+df2$month <- stri_sub(df2$timeDate,-4,-3)
+df2$day <- stri_sub(df2$timeDate,-6,-5)
+df2$hour <- as.numeric(stri_sub(df2$timeDate,5,6))
+df2$min <- as.numeric(stri_sub(df2$timeDate,3,4))
+df2$sec <- as.numeric(stri_sub(df2$timeDate,1,2))
+df2$date <- paste(df2$year, df2$month, df2$day, sep='-')
+df2$time <- paste(df2$hour, df2$min, df2$sec, sep=':')
+df2$datetime <- as.POSIXct(paste(df2$date, df2$time), format="%Y-%m-%d %H:%M:%S")
+class(df2$datetime)
+
+ 
+
+```
+```{r, warning=FALSE}
+#create a column that calculates the time difference with previous row of a dataframe grouped by date, feeder and RFID
+
+df3<-df2 %>%
+  arrange(datetime)%>%
+  group_by(date, feeder, RFID) %>%
+  mutate(timeSincePreviousVisit = datetime - lag(datetime))%>%
+  arrange(RFID, feeder, date)%>%
+  ungroup()%>%
+  select(feeder,RFID,date, datetime, timeSincePreviousVisit)
+
+#lets look at the output of just those selected columns to see we have produced what we think we want
+#0 sec was calculated if the bird was on the feeder within the same seconds
+#NA is given if it is the birds' first visit of the day
+
+#rerun the above code without the select() argument
+
+df3<-df2 %>%
+  arrange(datetime)%>%
+  group_by(date, feeder, RFID) %>%
+  mutate(timeSincePreviousVisit = datetime - lag(datetime))%>%
+  arrange(RFID, feeder, date)%>%
+  ungroup()
+
+##the new column timeSincePreviousVisit has "sec" and we don't want that, so lets remove it
+
+df3$timeSincePreviousVisit <- gsub(' sec', '', df3$timeSincePreviousVisit)
+
+#the column timeSincePreviousVisit needs to be numeric for graphical purposes and for filtering based on greater than/less than values
+
+df3$timeSincePreviousVisit <- as.numeric(as.character(df3$timeSincePreviousVisit)) 
+class(df3$timeSincePreviousVisit)
+
+#create a dataframe of successive visits that are less than 20 seconds so we can graph how frequently birds are read at the feeder
+#use the "select" argument to extract only the column named timesSincePreviousVisit
+df4<-df3%>%
+  filter(timeSincePreviousVisit <=20)%>%
+  select(timeSincePreviousVisit)
+class(df4$timeSincePreviousVisit)
+
+
+#cumulative frequency graph
+ggplot(df4, aes(timeSincePreviousVisit, y= 1-..y..))+
+  stat_ecdf(geom = "step", color="purple")
+#histogram
+ggplot(df4, aes(x=timeSincePreviousVisit)) +geom_histogram(binwidth = 1) 
+
+#it appears that visit frequency drops after 1 second and there are a small fraction that occur after 2 and 3 seconds. 
+#Most of the literature does a cut off at 2 or 3 seconds. 
+
+#Filter dataset to remove visits that were within 1-2 seconds of eachother
+
+#note that there are NAs because it was the first visit of the day so we can replace that with 'firstVisit'
+df3$timeSincePreviousVisit[is.na(df3$timeSincePreviousVisit)] <- 'firstVisit' 
+
+
+df5<-df3%>%
+  filter(timeSincePreviousVisit=='firstVisit')
+
+df6<-df3%>%
+  filter(timeSincePreviousVisit>2)
+#we need to make the column timeSincePreviousVisit a character back from numerical in order to bind with df5, which is a character string
+df6$timeSincePreviousVisit <- as.character(df6$timeSincePreviousVisit)
+
+df7<-bind_rows(df5,df6)%>%
+  arrange(RFID,feeder,date)
+
+
+write.table(df7, file = "filteredVisitsFeeders.txt",sep="\t",row.names=FALSE)
+```
+## 4.3 cleanup dataframe and save it
+The current dataframe has some columns that are redundant and the format of the column headers aren't the same
+```{r}
+#before we do this, lets save the file as it is now
+
+write.table(df7, file = "filteredVisitsFeeders.txt",sep="\t",row.names=FALSE)
+
+#check the column names
+names(df7)
+#SPEC and SEX are not in our typical format, so lets change the names of the columns to match our syntax
+
+#change the column
+names(df7)[names(df7) == "SEX"] <- "sex"  
+names(df7)[names(df7) == "SPEC"] <- "species"  
+
+#we dont need "oldtimeDate" or "timeDate" anymore
+#we can also rearrange the order of the columns
+
+df7<-df7%>%
+  select(chNtimeDate, chNtimeDate25, TagID_Hex, RFID, btoRing, species, sex, dateFirstCaptured, ageFirstCaptured, feeder, year, month, day, hour, min, sec, date, time, datetime, timeSincePreviousVisit )
+
+write.table(df7, file = "filteredVisitsFeeders.txt",sep="\t",row.names=FALSE)
+```
+
+
+### 4.4 Dealing with RFID malfunction
+
+```{r}
+#Check for periods of missing data
+#we have a dataframe with time since previous visit grouped by individual and by date. We would expect big time gaps across all individuals if a feeder was down. 
+df7$timeSincePreviousVisit <- as.numeric(as.character(df7$timeSincePreviousVisit)) 
+hist(df7$timeSincePreviousVisit)
+min(df7$timeSincePreviousVisit)
+#this gives us a value of NA - this is because there are NAs in the document, so we need to add an argument to ignore these. 
+min(df7$timeSincePreviousVisit, na.rm = TRUE)
+max(df7$timeSincePreviousVisit, na.rm = TRUE)
+mean(df7$timeSincePreviousVisit, na.rm = TRUE)
+median(df7$timeSincePreviousVisit, na.rm = TRUE)
+#how many seconds in a day?
+24*60*60
+#daylight hours?
+16*60*60
+```
+There doesn't appear to be any obvious indication that any of the feeders were down.
+
+But maybe a feeder was down for an entire day, and since we filtered by day, there wouldn't be large periods of no visits. 
+
+```{r}
+#first lets see how many days we have data for
+unique(df7$date)
+
+#is this true for all feeders?
+
+F01<-df7%>%
+  filter(feeder=='feeder01')
+unique(F01$date)
+
+F02<-df7%>%
+  filter(feeder=='feeder02')
+unique(F02$date)
+
+F03<-df7%>%
+  filter(feeder=='feeder03')
+unique(F03$date)
+#we can see that feeder03 did not collect data on 2020-01-20, 2020-01-23, 2020-01-24
+
+```
+
+Imagine we decided we want to remove data from feeders that were working but overlapped with a time that another was not working, perhaps because they are highly dependent on eachother
+```{r}
+#remove rows that meet the conditions of having the following dates in the column "date"
+df8<-df7[!(df7$date=="2020-01-20" |df7$date=="2020-01-23" |df7$date=="2020-01-24" ),]
+#check that worked
+unique(df8$date)
+```
+How to deal with missing data depends on the experiment and analysis. 
+
+Examples:
+
+- For social network analysis, the Machine Learning algorithms workout flocking events from the streams of data over periods of weeks and therefore these analyses are less sensitive to malfunctions, provided you have sufficient periods when the feeders are working
+
+- If you were calculating frequency of nestbox visits per day, and the device failed part of the day, then you would consider not including it that day, or correcting for malfunction time (e.g. frequncy per hour, not by day, or corrected for hours working)
+
+- If you had a learning experiment where birds had access to one out of an array of feeders, the following is what we did for our analysis: *We therefore included the duration of feeder malfunction before the bird reached learning criterion for both the assigned (own) feeder and separately for any of the other feeders in that site as additional fixed effects. Reichert et al 2020 RSOS*
+
+An alternative approach would be to add a column for each feeder and indicate whether it had malfunctioned for each row. 
+```{r }
+
+df8<-df7%>%
+  mutate(feeder03Malf = case_when(date =='2020-01-20' ~'Y', 
+                                  date =='2020-01-23'~'Y' , 
+                                  date =='2020-01-24'~'Y'))
+
+
+```
+## 5 Data visualisation and extraction
+
+### 5.1 total number and proportion of visits
+```{r}
+#a new dataframe that counts the total number of visits per feeder per individual, per date. 
+individualvisits<-df7%>%
+  count(feeder, RFID, date, sort = TRUE) 
+
+#a new dataframe that counts the proportion an individual visits a feeder relative to the other feeders, per day. 
+ProportionVisits<-individualvisits%>%
+  group_by(RFID, date)%>%
+  arrange(RFID)%>%
+  mutate(freq = n / sum(n))%>%
+  ungroup() 
+
+```
+### **5.1 EXERCISE** 
+- Create a dataframe of the total individual visits across the whole of your experiment, irrespective of feeder
+
+- Create a new dataframe that excludes individuals that visited less than 50 times (i.e. participation threshold censu Reichert et al 2020 RSOS) 
+
+- rename the column of the number of visits to "totalVisits"
+
+- plot a histogram of the number of visits from your new dataframe with an appropriate bar width
+
+- create a dataframe with a list of birds we consider participants and save it as a csv file
+```{r  }
+
+#5.1 exercise answer
+#a new dataframe that counts the total number of visits per individual. 
+individualvisits2<-df7%>%
+  count(RFID, sort = TRUE) 
+
+individualvisits3<-individualvisits2%>%
+  filter(n >50)%>%
+  select(RFID,n)
+
+#change the column
+names(individualvisits3)[names(individualvisits3) == "n"] <- "totalVisits"  
+
+ggplot(individualvisits3, aes(x=totalVisits)) +geom_histogram(binwidth = 20) 
+
+participants <- unique(individualvisits3$RFID)
+
+participants<-as.data.frame(participants)
+#write.csv(participants, file="FeederExperimentParticipants.csv"))
+
+```
+
+### 5.2 how many RFID devices an individual visits
+```{r}
+# check how many feeders each individual visited
+IDFeeder<-df7%>%
+  count(feeder, RFID, sort = TRUE) 
+IDFeeder<-IDFeeder%>%
+  count(RFID, sort = TRUE) 
+summary(IDFeeder$n)
+boxplot(IDFeeder$n)
+
+##this may also be particularly useful for a nestbox population to see how many other nestboxes individuals visit
+```
+### 5.3 EXERCISE - Time intervals between visits among individuals
+
+Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
+
+- clear your global environment
+
+- reload your database "filteredVisitsFeeders.txt"
+
+- change the datetime column to be a POSIXct class 
+
+- create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
+
+- create a dataframe consisting of individuals that visited a feeder equal or less than 1 second after the previous visitor, perhaps this suggests they are more likely to displace other birds from the feeder. 
+
+- create a dataframe of a list of unique individuals that have landed on a feeder within 1 second of the previous visitor
+
+- create a dataframe that counts the number of times each individual has landed on a feeder within 1 second of the previous visitor
+
+
+```{r}
+#clear global environment
+rm(list = ls(all.names = TRUE))
+
+#upload file 
+
+df<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
+names(df)
+# change datetime column to be POSIXct class
+class(df$datetime)
+df$datetime <- as.POSIXct(df$datetime)
+class(df$datetime)
+
+df1<-df %>%
+  arrange(datetime)%>%
+  group_by(date, feeder) %>%
+  mutate(timeBetweenID = datetime - lag(datetime))%>%
+  arrange(datetime)%>%
+  ungroup()
+
+df1$timeBetweenID <- as.numeric(as.character(df1$timeBetweenID)) 
+class(df1$timeBetweenID)
+
+df2<-df1%>%
+  filter(timeBetweenID <=1)
+
+uniqueDisplacers<-unique(df2$RFID)
+uniqueDisplacers<-as.data.frame(uniqueDisplacers)
+
+individualDisplacements<-df2%>%
+  count(RFID, sort = TRUE) 
+
+```
+
+### 5.4 EXERCISE - Correct and incorrect visits
+
+Imagine feeder01 is rewarded and feeder02 and feeder03 are not rewarded. How would you include a column called "correctChoice" where visits to feeder01 contain the character "Y" and visits to the incorrect feeders contain the character "N"
+```{r}
+
+df7<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
+
+F01Y<-df7%>%
+  filter(feeder=='feeder01')
+F01Y<-cbind(F01Y, correctChoice='Y')
+
+F02N<-df7%>%
+  filter(feeder=='feeder02')
+F02N<-cbind(F02N, correctChoice='N')
+
+F03N<-df7%>%
+  filter(feeder=='feeder03')
+F03N<-cbind(F03N, correctChoice='N')
+
+df7<-bind_rows(F01Y, F02N, F03N)
+
+#Note that there are other methods, but this method uses approaches we learned in today's workshop. As you enhance your R coding skills you'll inevitably refine your code. 
+
+```
+
+
+# END OF FEEDER RFID TUTORIAL 
+
+```{r}
+sessionInfo()
+```
+
