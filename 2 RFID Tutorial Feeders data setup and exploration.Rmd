@@ -174,7 +174,7 @@ df3<-cbind(df3, feeder='F03') #add a column named feeder and have all the values
 
 d220206<-bind_rows(df1,df2,df3)  #I have named this according to the date of the folder these files came from. 
 
-#you should now see df123 in your environment and there should be 1526 observations
+#you should now see d220206 in your environment and there should be 1526 observations
 
 377+780+369  #the combined number of observations from df1, df2 and df3 =1526, which is expected. 
 
@@ -182,26 +182,29 @@ d220206<-bind_rows(df1,df2,df3)  #I have named this according to the date of the
 
 rm(df1,df2,df3) #this should remove them from your environment. 
 
+
+```
+
+### **2.3 EXERCISE** 
+There are three more files in the folder that come from different feeders that need to be added to the master database.
+
+Make sure to 
+
+- add the feeder name column
+
+- save a new Master database with **THE DATE OF THE LAST SET OF FILES YYMMDD**
+
+```{r}
+
 #if you use the same naming system as before, you will then end up with a dataframe named d220209. 
 
 #bind rows for your dataframes from different dates
 
 dfinal<-bind_rows(d220206,d220209)  #the order of the dfs as arguments will determine the order in which they appear in the dataframe. You can change this, but you could here choose the most contemporary date to come second. 
-
-path<-"F:/Work/www/sunhearts"  ###insert your own path - this is the main folder that contains all the feeder files for each date, but within the specific feeder type (e.g. sunhearts). 
-RTfiles<-list.files(path, pattern = "RT", recursive = TRUE) ###create a list of all the files in that folder and subfolders (recursive =T) that contain "RT" in the filename
-Sunhearts<-lapply(RTfiles, read.delim)  ###upload all those files into R
-class(Sunhearts)  ##it uploads as a list which isn't helpful yet
-df <- dplyr::bind_rows(Sunhearts)  ###this binds all the files into a dataframe
-Sunhearts<-cbind(df, feeder='sunhearts')  ###add a column called "sunhearts" so you know that comes from the sunheart treatment, and in case you want to bind  sunhearts, gravel and peanut into a single dataframe.  
-write.table(Sunhearts, file = "Sunhearts_Allfiles.txt",sep="\t",row.names=FALSE)  
-
-##repeat for Peanut and Gravel.
-SPG<-bind_rows(Sunhearts,Peanut,Gravel) ##optional combine them into a single dataframe. 
-
 ```
 
-### 2.2.5 Saving your work and returning to it later
+
+### 2.4.1 Saving your work and returning to it later
 ```{r}
 
 #by default, R will save to your current working directory. So lets change it to a higher directory than we are currently in. Otherwise it may be hard to find which subfolder to save into. You could also create a folder specifically for saving into. 
@@ -247,18 +250,8 @@ write.table(masterdf, file = "200122MasterDatabase_feeders_2020FieldSeason.txt",
 rm(list = ls(all.names = TRUE))
 ```
 
-
-### **2.3 EXERCISE** 
-There are three more files in the folder that come from different feeders that need to be added to the master database.
-
-Make sure to 
-
-- add the feeder name column
-
-- save a new Master database with **THE DATE OF THE LAST SET OF FILES**
-
-### 2.4 Use R Markdown to keep track of your data importing and saving 
-Perhaps in the previous exercises you saved time by cutting and pasting previous code and changing the file names
+### Use R Markdown to keep track of your data importing and saving 
+Perhaps in the previous exercise you saved time by cutting and pasting previous code and changing the file names
 What if you changed the file name you saved to, but not the file name you uploaded, or vice versa? 
 What if you uploaded more data to merge it with an existing dataframe, and instead of copying and pasting your code (your document is getting rather large now), you decided to just write over previous code. 
 The latter is arguably not good practice, best to keep a record of every code you run. But there's still the possibility that along a long string of repetitive code, you lose track of what was done when. 
@@ -287,7 +280,6 @@ Additional resources for independent discovery of concepts and code:
 ### **2.5 EXERCISE** 
 
 Using the code you produced earlier, create a short R Markdown file and knit it. 
-
 
 # END OF 2. RFID Tutorial: Introduction to RFID use and data handling 
 
