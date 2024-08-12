@@ -222,41 +222,16 @@ list.dirs(path = "F:/RWorkspace/GitHub/RFID-workshop/data/feederData", full.name
 #If you would like to clear your global environment entirely. 
 rm(list = ls())
 
-#load your last working master dataframe to continue to add more incoming data, following the same steps above for new RT files. 
-
-#if you have closed R, you will need to specify the working directory
-setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
-masterdf<-read.delim("Masterdf_220209.txt", header=TRUE)
-head(masterdf)
-
-#add a new column named "feeder" with information about what feeder it comes from 
-df1<-cbind(df1, feeder='feeder01')  
-names(df1)
-df2<-cbind(df2, feeder='feeder01')
-names(df2)  
-#you can also look at your global environment and check there are now 4 variables
-df3<-cbind(df3, feeder='feeder02')
-df4<-cbind(df4, feeder='feeder02')
-#now you can join these into a single dataframe
-
-masterdf<-dplyr::bind_rows(df1,df2,df3,df4) 
-
-#this dataframe should have a total observations that is the sum of all 4 dfs, and 4 variables
-#now save your master dataframe
-
-write.table(masterdf, file = "200122MasterDatabase_feeders_2020FieldSeason.txt",sep="\t",row.names=FALSE) 
-
-#finally, lets clear the global environment so we don't have any conflicts with the next steps 
-rm(list = ls(all.names = TRUE))
 ```
 
 ### Use R Markdown to keep track of your data importing and saving 
-Perhaps in the previous exercise you saved time by cutting and pasting previous code and changing the file names
-What if you changed the file name you saved to, but not the file name you uploaded, or vice versa? 
-What if you uploaded more data to merge it with an existing dataframe, and instead of copying and pasting your code (your document is getting rather large now), you decided to just write over previous code. 
-The latter is arguably not good practice, best to keep a record of every code you run. But there's still the possibility that along a long string of repetitive code, you lose track of what was done when. 
+Perhaps in the previous exercise you saved time by cutting and pasting repetitive code and changing the df and feeder number values?. What if you forgot to change the feeder number, or one of the df names?
+If you are going to do that, make sure you copy and paste, rather than write over code (i.e. replacing df1 with df2 but not keeping the script where you were working with df1). 
+It is important to keep a record of every code you run. But there's still the possibility that over the course of repetitive copy-pasted code, you lose track of what was done when. 
 R markdown is an excellent tool for keeping track of what you have done and sharing your code with others. 
-As you become more familiar with R you will also be able to write your own functions that will also minimise the chance of code errors/typos. 
+Later, as you become more familiar with R you will also be able to write your own functions that will also minimise the chance of code errors/typos. 
+
+But for now, lets try R Markdown:
 
 - In R studio go to File>New File> R Markdown...
 
@@ -264,7 +239,7 @@ As you become more familiar with R you will also be able to write your own funct
 
 - Delete all the default text except the title
 
-- On the top right hand corner of the R markdown window is a green sqare with a plus sign and "c". Click that arrow and chose r script
+- On the top right hand corner of the R markdown window is a green square with a plus sign and "c". Click that arrow and chose r script
 
 - You can now write your r script in this gray area
 - Use the "#" below r script to leave yourself notes
@@ -280,6 +255,45 @@ Additional resources for independent discovery of concepts and code:
 ### **2.5 EXERCISE** 
 
 Using the code you produced earlier, create a short R Markdown file and knit it. 
+
+### Answers to EXERCISE
+```{r}
+#the files are text files so you need to use a function that calls .txt. files
+
+path2<-"F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F01_220209"
+setwd(path2)
+# Call the RT file into your environment and call it df1 (dataframe 1)
+
+RTfile<-list.files(path2, pattern = "RT")
+df1<-lapply(RTfile, read.delim) #this will appear as a list in your environment
+df1<-as.data.frame(df1) #turn it into a dataframe
+head(df1)
+df1<-cbind(df1, feeder='F01')
+           
+path3<-"F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F02_220209"
+setwd(path3)
+# Call the RT file into your environment and call it df2 (dataframe 2)
+
+RTfile<-list.files(path3, pattern = "RT")
+df2<-lapply(RTfile, read.delim) #this will appear as a list in your environment
+df2<-as.data.frame(df2) #turn it into a dataframe
+head(df2)
+df2<-cbind(df2, feeder='F02')
+
+path4<-"F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F03_220209"
+setwd(path4)
+# Call the RT file into your environment and call it df2 (dataframe 3)
+
+RTfile<-list.files(path4, pattern = "RT")
+df3<-lapply(RTfile, read.delim) #this will appear as a list in your environment
+df3<-as.data.frame(df3) #turn it into a dataframe
+head(df3)
+df3<-cbind(df3, feeder='F03')    
+
+d220209<-bind_rows(df1,df2,df3) 
+
+```
+
 
 # END OF 2. RFID Tutorial: Introduction to RFID use and data handling 
 

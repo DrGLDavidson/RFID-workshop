@@ -46,7 +46,7 @@ names(df)
 
 ## 3.2 Data filtering
 
-### 3.2.1 remove misreads (i.e. erroneous RFID reads)
+### 3.2.1 Remove misreads (i.e. erroneous TagID_hex values)
 # Ocassionally the RFID reader will incorrectly read an tag. This may be because the bird does not properly land on the perch to feed, and so these 'misreads' can be removed. 
 # To remove misreads, we need to match the feeder data against known tagged bird IDs (i.e. Passive Integrative Transponder (PIT) tag numbers, aka TagID_hex). I have provided a file with a list of PIT tags and corresponding metadata (species, age, sex etc.). Note this data is NOT from the UEA population. 
 
@@ -56,7 +56,13 @@ names(df)
 PIT<-read.csv(file="PITList_tutorial.csv", header=TRUE)
 names(PIT)
 
-#upload the masterfile you created, or use the one in the folder
+#note that the ring type (BTO and PIT) refer to whether it was a new bird (first time given the ring), or retrap (already had the ring). It is possible that a bird may already have a BTO ring (R) but not a PIT tag (N). However, in these cases, the code was meant to be A for added (but you can ignore this detail for now). 
+
+#check how many unique PIT tag IDs there are, it should match the number of observations (global environment). If it does not match, it suggests duplicates. Duplicates would matter if you are planning to merge the metadata and you want it to be a particular date (e.g. age of a bird when it was first fitted with a ring)
+
+length(unique(PIT$pitID))
+
+#
 
 #merge dataframes by their shared RFID and rename missing data with "NA"
 df1 <- merge(df, PIT, by = "RFID", all = TRUE)
