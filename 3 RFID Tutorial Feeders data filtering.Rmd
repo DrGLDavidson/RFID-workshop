@@ -122,59 +122,46 @@ write.table(df2, file = "Masterdf_noMisreads.txt",sep="\t",row.names=FALSE)
 
 ```
 
-### 4.2 Filter repetitive RFID reads within a single visit
+### 3.2.1 Filter repetitive RFID reads within a single visit
+
+## A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.  
 
 ```{r}
-#first we need to make the time column in a time format
-class(df2$timeDate)
-#it appears that throughout our data wrangling the files have dropped the zero in front of some of the values in the column timeDate, which is the following digits: 2xsec, 2xmin, 2xhour 2xcalendar day, 2xmonth, 2xyear.
-#to rectify this, we will create a new column from the chNtimeDate25 column. This may not be relevant to your RFID output
-names(df2)[names(df2) == "timeDate"] <- "oldtimeDate" 
-df2$chNtimeDate<-str_replace_all(df2$chNtimeDate,fixed(" "), "")  ###remove spaces
-df2$timeDate<-substring(df2$chNtimeDate, nchar(as.character(df2$chNtimeDate))- 11) 
-# Extract information for year, month, day etc. from timeDate column
-df2$year <- stri_sub(df2$timeDate,-2,-1)
-df2$year <- paste(df2$year,'20', sep='')
-df2$month <- stri_sub(df2$timeDate,-4,-3)
-df2$day <- stri_sub(df2$timeDate,-6,-5)
-df2$hour <- as.numeric(stri_sub(df2$timeDate,5,6))
-df2$min <- as.numeric(stri_sub(df2$timeDate,3,4))
-df2$sec <- as.numeric(stri_sub(df2$timeDate,1,2))
-df2$date <- paste(df2$year, df2$month, df2$day, sep='-')
-df2$time <- paste(df2$hour, df2$min, df2$sec, sep=':')
-df2$datetime <- as.POSIXct(paste(df2$date, df2$time), format="%Y-%m-%d %H:%M:%S")
-class(df2$datetime)
+#As we will be working with time, we need to change the class of the Date column as a POSIX class. 
+df2<-df2%>%
+  mutate(Date=ymd_hms(Date))
 
- 
+class(df2$Date)
 
 ```
 ```{r, warning=FALSE}
 #create a column that calculates the time difference with previous row of a dataframe grouped by date, feeder and RFID
 
 df3<-df2 %>%
-  arrange(datetime)%>%
-  group_by(date, feeder, RFID) %>%
-  mutate(timeSincePreviousVisit = datetime - lag(datetime))%>%
-  arrange(RFID, feeder, date)%>%
+  arrange(Date)%>%
+  group_by(feeder, TagID_hex) %>%
+  mutate(timeSincePreviousVisit = Date - lag(Date))%>%
+  arrange(TagID_hex, feeder, Date)%>%
   ungroup()%>%
-  select(feeder,RFID,date, datetime, timeSincePreviousVisit)
+  select(feeder, TagID_hex,Date, timeSincePreviousVisit)
 
-#lets look at the output of just those selected columns to see we have produced what we think we want
+#look at the output of just those selected columns to see we have produced what we think we want
+View(df3)
 #0 sec was calculated if the bird was on the feeder within the same seconds
-#NA is given if it is the birds' first visit of the day
+#NA is given if it is the birds' first visit of the dataframe
 
-#rerun the above code without the select() argument
+#rerun the above code without the select() argument so we have the full dataframe of variables
 
 df3<-df2 %>%
-  arrange(datetime)%>%
-  group_by(date, feeder, RFID) %>%
-  mutate(timeSincePreviousVisit = datetime - lag(datetime))%>%
-  arrange(RFID, feeder, date)%>%
+  arrange(Date)%>%
+  group_by(feeder, TagID_hex) %>%
+  mutate(timeSincePreviousVisit = Date - lag(Date))%>%
+  arrange(TagID_hex, feeder, Date)%>%
   ungroup()
 
-##the new column timeSincePreviousVisit has "sec" and we don't want that, so lets remove it
+#the new column timeSincePreviousVisit has "secs" and we don't want that, so lets remove it
 
-df3$timeSincePreviousVisit <- gsub(' sec', '', df3$timeSincePreviousVisit)
+df3$timeSincePreviousVisit <- gsub(' secs', '', df3$timeSincePreviousVisit)
 
 #the column timeSincePreviousVisit needs to be numeric for graphical purposes and for filtering based on greater than/less than values
 
@@ -195,28 +182,28 @@ ggplot(df4, aes(timeSincePreviousVisit, y= 1-..y..))+
 #histogram
 ggplot(df4, aes(x=timeSincePreviousVisit)) +geom_histogram(binwidth = 1) 
 
-#it appears that visit frequency drops after 1 second and there are a small fraction that occur after 2 and 3 seconds. 
+#it appears that visit frequency drops after 2 seconds and there are a small fraction that occur from 5 seconds. 
 #Most of the literature does a cut off at 2 or 3 seconds. 
 
-#Filter dataset to remove visits that were within 1-2 seconds of eachother
+#Filter dataset to remove visits that were within 3 seconds of eachother
 
-#note that there are NAs because it was the first visit of the day so we can replace that with 'firstVisit'
+#note that there are NAs because it was the first visit of the dataframe so we can replace that with 'firstVisit'
 df3$timeSincePreviousVisit[is.na(df3$timeSincePreviousVisit)] <- 'firstVisit' 
 
-
+#to ensure we do not loose these visits - i think????
 df5<-df3%>%
   filter(timeSincePreviousVisit=='firstVisit')
 
 df6<-df3%>%
-  filter(timeSincePreviousVisit>2)
+  filter(timeSincePreviousVisit>3)
 #we need to make the column timeSincePreviousVisit a character back from numerical in order to bind with df5, which is a character string
 df6$timeSincePreviousVisit <- as.character(df6$timeSincePreviousVisit)
 
 df7<-bind_rows(df5,df6)%>%
-  arrange(RFID,feeder,date)
+  arrange(TagID_hex,feeder,Date)
 
 
-write.table(df7, file = "filteredVisitsFeeders.txt",sep="\t",row.names=FALSE)
+write.table(df7, file = "s.txt",sep="\t",row.names=FALSE)
 ```
 ## 4.3 cleanup dataframe and save it
 The current dataframe has some columns that are redundant and the format of the column headers aren't the same
@@ -239,7 +226,7 @@ names(df7)[names(df7) == "SPEC"] <- "species"
 df7<-df7%>%
   select(chNtimeDate, chNtimeDate25, TagID_Hex, RFID, btoRing, species, sex, dateFirstCaptured, ageFirstCaptured, feeder, year, month, day, hour, min, sec, date, time, datetime, timeSincePreviousVisit )
 
-write.table(df7, file = "filteredVisitsFeeders.txt",sep="\t",row.names=FALSE)
+write.table(df7, file = "Masterdf_noRepeats.txt",sep="\t",row.names=FALSE)
 ```
 
 
@@ -252,14 +239,17 @@ df7$timeSincePreviousVisit <- as.numeric(as.character(df7$timeSincePreviousVisit
 hist(df7$timeSincePreviousVisit)
 min(df7$timeSincePreviousVisit)
 #this gives us a value of NA - this is because there are NAs in the document, so we need to add an argument to ignore these. 
-min(df7$timeSincePreviousVisit, na.rm = TRUE)
-max(df7$timeSincePreviousVisit, na.rm = TRUE)
-mean(df7$timeSincePreviousVisit, na.rm = TRUE)
+min(df7$timeSincePreviousVisit, na.rm = TRUE) #shortest time between visits
+max(df7$timeSincePreviousVisit, na.rm = TRUE) #longest time between visits - but this could be a single bird that went away for a few days
+mean(df7$timeSincePreviousVisit, na.rm = TRUE) 
 median(df7$timeSincePreviousVisit, na.rm = TRUE)
 #how many seconds in a day?
 24*60*60
-#daylight hours?
-16*60*60
+#daylight hours? #usually this experiment occurs in winter, so around 7am to 4pm (9 hours)
+9*60*60
+#night hours? 
+15*60*60
+#
 ```
 There doesn't appear to be any obvious indication that any of the feeders were down.
 
