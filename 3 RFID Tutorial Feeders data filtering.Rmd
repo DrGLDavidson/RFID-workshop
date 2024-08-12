@@ -24,9 +24,13 @@ library(magrittr) #may not need this
 ### Download resources necessary for the workshop
 Download the resources from **[my github page](https://github.com/DrGLDavidson/TOBEUPDATED)**
 
-## 3.1 Introduction to RFID for animal behaviour
+## 3.1 import your dataset to your environment from your working directory. 
 
 ```{r}
+
+#clear the global environment so we don't have any conflicts with the next steps 
+
+rm(list = ls(all.names = TRUE))
 
 #choose the appropriate working directory
 
@@ -34,51 +38,25 @@ setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
 
 #call your most recent dataset of merged feeder data. 
 
-masterdf<-read.delim("Masterdf_220209.txt", header=TRUE)
+df<-read.delim("Masterdf_220209.txt", header=TRUE)
 head(masterdf)
+names(df)
 
 ```
 
+## 3.2 Data filtering
 
-### 3.4 Using R Markdown to keep track of your data importing and saving 
-Perhaps in the previous exercises you saved time by cutting and pasting previous code and changing the file names
-What if you changed the file name you saved to, but not the file name you uploaded, or vice versa? 
-What if you uploaded more data to merge it with an existing dataframe, and instead of copying and pasting your code (your document is getting rather large now), you decided to just write over previous code. 
-The latter is arguably not good practice, best to keep a record of every code you run. But there's still the posibility that along a long string of repetitive code, you lose track of what was done when. 
-R markdown is an excellent tool for keeping track of what you have done and sharing your code with others. 
-
-- In R studio go to File>New File> R Markdown...
-
-- Input a title and click ok. 
-
-- Delete all the default text except the title
-
-- On the top right hand corner of the R markdown window is a green sqare with a plus sign and "c". Click that arrow and chose r script
-
-- You can now write your r script in this gray area
-- Use the "#" below r script to leave yourself notes
-- write outside of the r script for headings or any other detail you want. 
-- click the Knit button on the top left hand side of the R markdown window and it will produce a document and save it to your working directory. 
-
-### **3.4 EXERCISE** 
-
-Using the code you produced earlier, create a short R Markdown file and knit it. 
-
-## 4. Data filtering
-
-### 4.1 remove misreads (i.e. erroneous RFID reads)
+### 3.2.1 remove misreads (i.e. erroneous RFID reads)
+# Ocassionally the RFID reader will incorrectly read an tag. This may be because the bird does not properly land on the perch to feed, and so these 'misreads' can be removed. 
+# To remove misreads, we need to match the feeder data against known tagged bird IDs (i.e. Passive Integrative Transponder (PIT) tag numbers, aka TagID_hex). I have provided a file with a list of PIT tags and corresponding metadata (species, age, sex etc.). Note this data is NOT from the UEA population. 
 
 ```{r}
-#clear the global environment so we don't have any conflicts with the next steps 
 
-rm(list = ls(all.names = TRUE))
-#upload a list of your known RFID tag IDs (aka Passive integrative transponder tags)
-PIT<-read.csv(file="PITList_metadata.csv", header=TRUE)
+#upload a list of your known PIT tag IDs
+PIT<-read.csv(file="PITList_tutorial.csv", header=TRUE)
 names(PIT)
 
 #upload the masterfile you created, or use the one in the folder
-df<-read.table(file="Tutorial230427MasterDatabase_feeders_2020FieldSeason.txt", sep="\t", header=TRUE, colClasses=c(timeDate ='character'))
-names(df)
 
 #merge dataframes by their shared RFID and rename missing data with "NA"
 df1 <- merge(df, PIT, by = "RFID", all = TRUE)
