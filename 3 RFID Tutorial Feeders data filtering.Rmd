@@ -39,7 +39,7 @@ setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
 #call your most recent dataset of merged feeder data. 
 
 df<-read.delim("Masterdf_220209.txt", header=TRUE)
-head(masterdf)
+head(df)
 names(df)
 
 ```
@@ -52,7 +52,7 @@ names(df)
 
 ```{r}
 
-#upload a list of your known PIT tag IDs
+#upload a list of your known PIT tag IDs. Notice that the file is a .csv, rather than .txt
 PIT<-read.csv(file="PITList_tutorial.csv", header=TRUE)
 names(PIT)
 
@@ -62,35 +62,63 @@ names(PIT)
 
 length(unique(PIT$pitID))
 
-#
+#to merge/match PIT tags from two files you must ensure the header that contains the values of interest are named the same across files. Currently they are not. 
 
-#merge dataframes by their shared RFID and rename missing data with "NA"
-df1 <- merge(df, PIT, by = "RFID", all = TRUE)
+head(PIT)
+head(df)
+
+#rename the header in PIT to match that of df
+names(PIT)[names(PIT) == "pitID"] <- "TagID_hex"  
+names(PIT)
+
+#if we view df, we will also see there are a lot of rows with no TagID_hex. This is because non-tagged birds often land on the feeder and it shows up as a time stamp with no corresponding TagID_hex. Lets remove blank rows, otherwise there will be many rows that can't merge with PIT. 
+
+df <- with(df, df[!(TagID_hex == "" | is.na(TagID_hex)), ])
+
+#Now you can merge dataframes by their shared TagID_hex value. In addition, if there are any missing TagID_hex values from PIT, it will be indicated with "NA". In other words, if a bird that is not on our database was detected at the feeder, it will show up as NA. This code also returns any values from our PIT dataframe that was not on df. In otherwords, an NA is given if the bird on our database was never detected at the feeders. 
+
+df1 <- merge(df, PIT, by = "TagID_hex", all = TRUE)
 df1[is.na(df1)] <- "NA"  
 
-#create a dataframe of RFID reads that did not match with a known bird from our PIT dataframe
-misreads<-df1%>%
-  filter(btoRing=="NA") 
+#We are only interested in the TagID_hex that was detected at the feeder, but not on our database. We will filter these into a new dataframe called missing. We extract these as values that did not have a BTO 
 
-##create a list of RFID reads that did not have a match 
+missing<-df1%>%
+  filter(btoID=="NA")
 
-uniqueMisreads <- unique(misreads$RFID)
+# why do we do this with the header btoRing? Because TagID_hex is now merged across dataframes, so this is no longer informative for missing data. Any of the headers from the PIT dataframe would work, but we are using btoID. 
 
-uniqueMisreads<-as.data.frame(uniqueMisreads)
+#there are 54 observations where there is no corresponding PIT tag. 
+#create a list of TagID_hex reads that did not have a match: 
 
-##This is a manageable list of RFID errors and there are several that look like genuine RFID tags. I'm going to save this list and cross-reference my ID database to make sure I haven't missed any from the PITList_metadata file. 
+uniqueMisreads <- unique(missing$TagID_hex)
+uniqueMisreads
+
+#there are two tags. "0300024FEF" is our reference tag. It is the tag that the experimenter uses to test the feeders and mark when experiments start and end. "01103F3B1B" looks like a genuine tag. But is it a misread or missing data from our PIT tag data? To answer this, double check the master ringing database to see if that tag is there. If it is not there, assume it is a misread. If it is there, add it to the PIT database and re-run your code.
 
 #save your misreads for your records
 
+setwd(path)  # insert the correct working directory (path)
+
 write.csv(uniqueMisreads, file="uniqueMisreadsFeeders.csv")
 
-#assuming we have resolved this, lets merge the master RFID database with our PITList and remove NAs from the btoRing column
+#assuming we have resolved this, merge df and PIT again, using a different code that wont keep all NAs from the PIT file, but will remove NAs from the btoRing column, using the argument all = FALSE
 
-df2<-dplyr::left_join(df, PIT ,by ="RFID")
+df1 <- merge(df, PIT, by = "TagID_hex", all = FALSE)
+
+#this returns a dataframe that is 1214 observations. 
+1268-1214
+
+# this equals 54, which is the same number of observations from our dataframe "missing". This makes sense. 
+
+# Another way you can merge dataframes is using the package dplyr and the following code: 
+
+df2<-left_join(df, PIT ,by ="TagID_hex")
+
+# and then we have to remove NAs with another chunk of code
 
 df2<-df2[!is.na(df2$btoRing),]
 
-write.table(df2, file = "200123MasterDatabase_feeders_2020FieldSeason_NoMisreads.txt",sep="\t",row.names=FALSE) 
+write.table(df2, file = "Masterdf_noMisreads.txt",sep="\t",row.names=FALSE) 
 
 ```
 
