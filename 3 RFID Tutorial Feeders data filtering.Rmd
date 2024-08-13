@@ -120,6 +120,10 @@ df2<-df2[!is.na(df2$btoRing),]
 
 write.table(df2, file = "Masterdf_noMisreads.txt",sep="\t",row.names=FALSE) 
 
+#clear the global environment so we don't have any conflicts with the next steps 
+
+rm(list = ls(all.names = TRUE))
+
 ```
 
 ### 3.2.1 Filter repetitive RFID reads within a single visit
@@ -127,108 +131,126 @@ write.table(df2, file = "Masterdf_noMisreads.txt",sep="\t",row.names=FALSE)
 ## A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.  
 
 ```{r}
-#As we will be working with time, we need to change the class of the Date column as a POSIX class. 
-df2<-df2%>%
-  mutate(Date=ymd_hms(Date))
+#As we will be working with time, we need to check how our dataframe is named and organised
+df2<-read.delim("Masterdf_noMisreads.txt", header=TRUE)
 
-class(df2$Date)
+head(df2)
+
+#there are two separate date columns and a time column. This is because we merged the feeder data with ringing data. 
+
+#rename ringing columns
+
+names(df2)[names(df2) == "date"] <- "dateRinged" 
+names(df2)[names(df2) == "time"] <- "timeRinged" 
+
+#rename feeder date column to indicate it also includes hours, minutes and seconds
+
+names(df2)[names(df2) == "Date"] <- "dateTime" 
+
+names(df2)
+
+#create a new column with the date only
+
+df2$date<-date(df2$dateTime)
+
+#cleanup the dataframe by selected the columns and order we want them to appear
+
+df2<-df2%>%
+  select(date, dateTime, Hmsec, ID, Event, Channel, Dur, Clks, Freq, Edges, Reps, Type, TagID_hex, feeder, dateRinged, timeRinged, btoRingType, btoID, species, pitTYPE, age, sex, wing, weight)
+names(df2)
+
+#we need to change the class of the timeDate column as a POSIX class. 
+
+df3<-df2%>%
+  mutate(dateTime=ymd_hms(dateTime))
+
+class(df3$dateTime)
 
 ```
 ```{r, warning=FALSE}
 #create a column that calculates the time difference with previous row of a dataframe grouped by date, feeder and RFID
 
-df3<-df2 %>%
-  arrange(Date)%>%
-  group_by(feeder, TagID_hex) %>%
-  mutate(timeSincePreviousVisit = Date - lag(Date))%>%
-  arrange(TagID_hex, feeder, Date)%>%
+#consider why you are grouping by these columns. The time interval will only be calculated PER date PER feeder and PER tag. If you wanted to know the time interval between days as well, then you would not group by date. Or if you wanted an interval regardless or feeder, you would remove feeder from your grouping argument. 
+
+df4<-df3 %>%
+  arrange(dateTime)%>%
+  group_by(date, feeder, TagID_hex) %>% 
+  mutate(timeSincePreviousVisit = dateTime - lag(dateTime))%>%
+  arrange(TagID_hex, feeder, dateTime)%>%
   ungroup()%>%
-  select(feeder, TagID_hex,Date, timeSincePreviousVisit)
+  select(feeder, TagID_hex,date, dateTime, timeSincePreviousVisit)
 
 #look at the output of just those selected columns to see we have produced what we think we want
-View(df3)
+View(df4)
 #0 sec was calculated if the bird was on the feeder within the same seconds
-#NA is given if it is the birds' first visit of the dataframe
+#NA is given if it is the birds' first visit to feeder X for that date
 
 #rerun the above code without the select() argument so we have the full dataframe of variables
 
-df3<-df2 %>%
-  arrange(Date)%>%
-  group_by(feeder, TagID_hex) %>%
-  mutate(timeSincePreviousVisit = Date - lag(Date))%>%
-  arrange(TagID_hex, feeder, Date)%>%
+df4<-df3 %>%
+  arrange(dateTime)%>%
+  group_by(date, feeder, TagID_hex) %>% 
+  mutate(timeSincePreviousVisit = dateTime - lag(dateTime))%>%
+  arrange(TagID_hex, feeder, dateTime)%>%
   ungroup()
+
 
 #the new column timeSincePreviousVisit has "secs" and we don't want that, so lets remove it
 
-df3$timeSincePreviousVisit <- gsub(' secs', '', df3$timeSincePreviousVisit)
+df4$timeSincePreviousVisit <- gsub(' secs', '', df4$timeSincePreviousVisit)
 
 #the column timeSincePreviousVisit needs to be numeric for graphical purposes and for filtering based on greater than/less than values
 
-df3$timeSincePreviousVisit <- as.numeric(as.character(df3$timeSincePreviousVisit)) 
-class(df3$timeSincePreviousVisit)
+df4$timeSincePreviousVisit <- as.numeric(as.character(df4$timeSincePreviousVisit)) 
+class(df4$timeSincePreviousVisit)
 
 #create a dataframe of successive visits that are less than 20 seconds so we can graph how frequently birds are read at the feeder
 #use the "select" argument to extract only the column named timesSincePreviousVisit
-df4<-df3%>%
+df5<-df4%>%
   filter(timeSincePreviousVisit <=20)%>%
   select(timeSincePreviousVisit)
-class(df4$timeSincePreviousVisit)
+class(df5$timeSincePreviousVisit)
 
 
 #cumulative frequency graph
-ggplot(df4, aes(timeSincePreviousVisit, y= 1-..y..))+
+ggplot(df5, aes(timeSincePreviousVisit, y= 1-..y..))+
   stat_ecdf(geom = "step", color="purple")
 #histogram
-ggplot(df4, aes(x=timeSincePreviousVisit)) +geom_histogram(binwidth = 1) 
+ggplot(df5, aes(x=timeSincePreviousVisit)) +geom_histogram(binwidth = 1) 
 
-#it appears that visit frequency drops after 2 seconds and there are a small fraction that occur from 5 seconds. 
+#it appears that visit frequency drops after 2 seconds, but it is not a clear drop.
+#it may help to eyeball the dataframe to see whether 3 seconds has another bird between, or if it's usually the same tag
+
+dfx<-df4%>%
+  arrange(dateTime, feeder,  timeSincePreviousVisit)%>%
+  select(dateTime, timeSincePreviousVisit, TagID_hex, feeder)
+
+#there are instances when 2 seconds in the same bird, 3 seconds in the same bird, 3 seconds is between birds, even higher numbers are the same bird. We need a code to collapse into a single visit that is not simply removing reads that are within X number of seconds. Instead it needs to be if the previous bird was the same bird AND it's below a given value. 
+
+
 #Most of the literature does a cut off at 2 or 3 seconds. 
 
-#Filter dataset to remove visits that were within 3 seconds of eachother
+#Filter dataset to remove visits that were within 2 seconds of eachother
 
 #note that there are NAs because it was the first visit of the dataframe so we can replace that with 'firstVisit'
-df3$timeSincePreviousVisit[is.na(df3$timeSincePreviousVisit)] <- 'firstVisit' 
+df4$timeSincePreviousVisit[is.na(df4$timeSincePreviousVisit)] <- 'firstVisit' 
 
 #to ensure we do not loose these visits - i think????
-df5<-df3%>%
+df6<-df4%>%
   filter(timeSincePreviousVisit=='firstVisit')
 
-df6<-df3%>%
-  filter(timeSincePreviousVisit>3)
+df7<-df4%>%
+  filter(timeSincePreviousVisit>2)
 #we need to make the column timeSincePreviousVisit a character back from numerical in order to bind with df5, which is a character string
-df6$timeSincePreviousVisit <- as.character(df6$timeSincePreviousVisit)
+df7$timeSincePreviousVisit <- as.character(df7$timeSincePreviousVisit)
 
-df7<-bind_rows(df5,df6)%>%
-  arrange(TagID_hex,feeder,Date)
+df8<-bind_rows(df6,df7)%>%
+  arrange(dateTime, TagID_hex,feeder)
+view(df8)
 
 
-write.table(df7, file = "s.txt",sep="\t",row.names=FALSE)
+write.table(df8, file = "Masterdf_noRepeats.txt",sep="\t",row.names=FALSE)
 ```
-## 4.3 cleanup dataframe and save it
-The current dataframe has some columns that are redundant and the format of the column headers aren't the same
-```{r}
-#before we do this, lets save the file as it is now
-
-write.table(df7, file = "filteredVisitsFeeders.txt",sep="\t",row.names=FALSE)
-
-#check the column names
-names(df7)
-#SPEC and SEX are not in our typical format, so lets change the names of the columns to match our syntax
-
-#change the column
-names(df7)[names(df7) == "SEX"] <- "sex"  
-names(df7)[names(df7) == "SPEC"] <- "species"  
-
-#we dont need "oldtimeDate" or "timeDate" anymore
-#we can also rearrange the order of the columns
-
-df7<-df7%>%
-  select(chNtimeDate, chNtimeDate25, TagID_Hex, RFID, btoRing, species, sex, dateFirstCaptured, ageFirstCaptured, feeder, year, month, day, hour, min, sec, date, time, datetime, timeSincePreviousVisit )
-
-write.table(df7, file = "Masterdf_noRepeats.txt",sep="\t",row.names=FALSE)
-```
-
 
 ### 4.4 Dealing with RFID malfunction
 
