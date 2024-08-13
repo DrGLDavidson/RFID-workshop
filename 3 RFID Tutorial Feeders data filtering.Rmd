@@ -34,7 +34,7 @@ rm(list = ls(all.names = TRUE))
 
 #choose the appropriate working directory
 
-setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data")
 
 #call your most recent dataset of merged feeder data. 
 
@@ -219,14 +219,6 @@ ggplot(df5, aes(timeSincePreviousVisit, y= 1-..y..))+
 ggplot(df5, aes(x=timeSincePreviousVisit)) +geom_histogram(binwidth = 1) 
 
 #it appears that visit frequency drops after 2 seconds, but it is not a clear drop.
-#it may help to eyeball the dataframe to see whether 3 seconds has another bird between, or if it's usually the same tag
-
-dfx<-df4%>%
-  arrange(dateTime, feeder,  timeSincePreviousVisit)%>%
-  select(dateTime, timeSincePreviousVisit, TagID_hex, feeder)
-
-#there are instances when 2 seconds in the same bird, 3 seconds in the same bird, 3 seconds is between birds, even higher numbers are the same bird. We need a code to collapse into a single visit that is not simply removing reads that are within X number of seconds. Instead it needs to be if the previous bird was the same bird AND it's below a given value. 
-
 
 #Most of the literature does a cut off at 2 or 3 seconds. 
 
@@ -235,76 +227,89 @@ dfx<-df4%>%
 #note that there are NAs because it was the first visit of the dataframe so we can replace that with 'firstVisit'
 df4$timeSincePreviousVisit[is.na(df4$timeSincePreviousVisit)] <- 'firstVisit' 
 
-#to ensure we do not loose these visits - i think????
-df6<-df4%>%
-  filter(timeSincePreviousVisit=='firstVisit')
+#to ensure we do not loose these visits - i think???? NO THIS JUST DUPLICATES DATA
+#df6<-df4%>%
+  #filter(timeSincePreviousVisit=='firstVisit')
 
-df7<-df4%>%
+df6<-df4%>%
   filter(timeSincePreviousVisit>2)
 #we need to make the column timeSincePreviousVisit a character back from numerical in order to bind with df5, which is a character string
-df7$timeSincePreviousVisit <- as.character(df7$timeSincePreviousVisit)
+df6$timeSincePreviousVisit <- as.character(df6$timeSincePreviousVisit)
 
-df8<-bind_rows(df6,df7)%>%
+df7<-bind_rows(df6)%>%
   arrange(dateTime, TagID_hex,feeder)
-view(df8)
+view(df7)
 
 
-write.table(df8, file = "Masterdf_noRepeats.txt",sep="\t",row.names=FALSE)
+write.table(df7, file = "Masterdf_noRepeats.txt",sep="\t",row.names=FALSE)
+
+rm(list = ls(all.names = TRUE))
+
 ```
 
-### 4.4 Dealing with RFID malfunction
+### 4.4 Checking for RFID malfunction. In otherwords, periods of missing data.
 
 ```{r}
+
+df1<-read.delim("Masterdf_noRepeats.txt", header=TRUE)
+
 #Check for periods of missing data
 #we have a dataframe with time since previous visit grouped by individual and by date. We would expect big time gaps across all individuals if a feeder was down. 
-df7$timeSincePreviousVisit <- as.numeric(as.character(df7$timeSincePreviousVisit)) 
-hist(df7$timeSincePreviousVisit)
-min(df7$timeSincePreviousVisit)
-#this gives us a value of NA - this is because there are NAs in the document, so we need to add an argument to ignore these. 
-min(df7$timeSincePreviousVisit, na.rm = TRUE) #shortest time between visits
-max(df7$timeSincePreviousVisit, na.rm = TRUE) #longest time between visits - but this could be a single bird that went away for a few days
-mean(df7$timeSincePreviousVisit, na.rm = TRUE) 
-median(df7$timeSincePreviousVisit, na.rm = TRUE)
-#how many seconds in a day?
-24*60*60
-#daylight hours? #usually this experiment occurs in winter, so around 7am to 4pm (9 hours)
-9*60*60
-#night hours? 
-15*60*60
-#
+
+#make dateTime a PosiX class object
+df1<-df1%>%
+  mutate(dateTime=ymd_hms(dateTime))
+
+class(df1$dateTime)
+
+#plot a histogram of visit frequency over hours. I think days of week is just assigned to start on friday. 
+hist(df1$dateTime, breaks = "hours", plot = TRUE, freq = TRUE, format)
+
+#We see there are periods of inactivity but that is regular and likely corresponds to nightime hours. 
+
+#however, this plot does not indicate whether a given feeder was inactive, as it lumps all three feeders together. 
+
+#create new dataframes filtered by feeder. 
+
+F01<-df1%>%
+  filter(feeder=='F01')
+
+#plot a histogram of visit frequency over hours for feeder F01
+hist(F01$dateTime, breaks = "hours", plot = TRUE, freq = TRUE, format, ylim=c(1, 40) ) #ylim is set because I already visualised all the plots and chose to standardise the y axis so they are comparable. You will have to edit this for your own data. 
+
+F02<-df1%>%
+  filter(feeder=='F02')
+
+#plot a histogram of visit frequency over hours for feeder F02
+hist(F02$dateTime, breaks = "hours", plot = TRUE, freq = TRUE, format, ylim=c(1, 40))
+
+F03<-df1%>%
+  filter(feeder=='F03')
+
+#plot a histogram of visit frequency over hours for feeder F03
+hist(F03$dateTime, breaks = "hours", plot = TRUE, freq = TRUE, format, ylim=c(1, 40))
+
 ```
-There doesn't appear to be any obvious indication that any of the feeders were down.
+These three feeders have very different distributions of visits, and so this is very suspicious. But there doesn't seem to be a specific day where feeders are entirely down, except perhaps the first day of the series on F03. 
 
-But maybe a feeder was down for an entire day, and since we filtered by day, there wouldn't be large periods of no visits. 
+You will need to consider your experimental design and what is expected. In fact this data is from feeders that contained different food types and one feeder was only available for a short time period compared to the others. 
 
+### 4.5 Removing periods of missing data.
+## If one of the feeders malfunctioned for a day and the entire experiment depends on all feeders working in tandem, this may be good reason to remove data for this day, but see below. 
 ```{r}
-#first lets see how many days we have data for
-unique(df7$date)
+#first check the dates data was collected
+unique(df1$date)
+#assuming feeder03 had a malfunction on the first day (2022-02-04), remove rows that meet the conditions of having the following dates in the column "date"
+df2<-df1[!(df1$date=="2022-02-04") ,]
+#the date should no longer be in the dataframe
+unique(df2$date)
 
-#is this true for all feeders?
+#if you needed to remove multiple date, the syntax is as follows:
 
-F01<-df7%>%
-  filter(feeder=='feeder01')
-unique(F01$date)
-
-F02<-df7%>%
-  filter(feeder=='feeder02')
-unique(F02$date)
-
-F03<-df7%>%
-  filter(feeder=='feeder03')
-unique(F03$date)
-#we can see that feeder03 did not collect data on 2020-01-20, 2020-01-23, 2020-01-24
-
+df3<-df1[!(df1$date=="2022-02-04" |df1$date=="2022-02-05" |df1$date=="2022-02-06" ),]
+unique(df3$date)
 ```
 
-Imagine we decided we want to remove data from feeders that were working but overlapped with a time that another was not working, perhaps because they are highly dependent on eachother
-```{r}
-#remove rows that meet the conditions of having the following dates in the column "date"
-df8<-df7[!(df7$date=="2020-01-20" |df7$date=="2020-01-23" |df7$date=="2020-01-24" ),]
-#check that worked
-unique(df8$date)
-```
 How to deal with missing data depends on the experiment and analysis. 
 
 Examples:
@@ -313,159 +318,23 @@ Examples:
 
 - If you were calculating frequency of nestbox visits per day, and the device failed part of the day, then you would consider not including it that day, or correcting for malfunction time (e.g. frequncy per hour, not by day, or corrected for hours working)
 
-- If you had a learning experiment where birds had access to one out of an array of feeders, the following is what we did for our analysis: *We therefore included the duration of feeder malfunction before the bird reached learning criterion for both the assigned (own) feeder and separately for any of the other feeders in that site as additional fixed effects. Reichert et al 2020 RSOS*
+- If you had a learning experiment where birds had access to one out of an array of feeders, for example, [Reichert et al 2020](https://doi.org/10.1098/rsos.192107), they retained data and added a co-variable for feeder malfunction (assigned, not assigned) in their statistical analyses. 
+*We therefore included the duration of feeder malfunction before the bird reached learning criterion for both the assigned (own) feeder and separately for any of the other feeders in that site as additional fixed effects.*
 
 An alternative approach would be to add a column for each feeder and indicate whether it had malfunctioned for each row. 
 ```{r }
 
-df8<-df7%>%
-  mutate(feeder03Malf = case_when(date =='2020-01-20' ~'Y', 
-                                  date =='2020-01-23'~'Y' , 
-                                  date =='2020-01-24'~'Y'))
+#create a new dataframe where it indicates that feeder 03 malfunctioned. 
+df4<-df1%>%
+  mutate(feeder03Malf = case_when(date =='2022-02-04' ~'Y', 
+                                  date =='2022-02-05'~'Y' , 
+                                  date =='2022-02-06'~'Y'))
 
 
 ```
-## 5 Data visualisation and extraction
-
-### 5.1 total number and proportion of visits
-```{r}
-#a new dataframe that counts the total number of visits per feeder per individual, per date. 
-individualvisits<-df7%>%
-  count(feeder, RFID, date, sort = TRUE) 
-
-#a new dataframe that counts the proportion an individual visits a feeder relative to the other feeders, per day. 
-ProportionVisits<-individualvisits%>%
-  group_by(RFID, date)%>%
-  arrange(RFID)%>%
-  mutate(freq = n / sum(n))%>%
-  ungroup() 
-
-```
-### **5.1 EXERCISE** 
-- Create a dataframe of the total individual visits across the whole of your experiment, irrespective of feeder
-
-- Create a new dataframe that excludes individuals that visited less than 50 times (i.e. participation threshold censu Reichert et al 2020 RSOS) 
-
-- rename the column of the number of visits to "totalVisits"
-
-- plot a histogram of the number of visits from your new dataframe with an appropriate bar width
-
-- create a dataframe with a list of birds we consider participants and save it as a csv file
-```{r  }
-
-#5.1 exercise answer
-#a new dataframe that counts the total number of visits per individual. 
-individualvisits2<-df7%>%
-  count(RFID, sort = TRUE) 
-
-individualvisits3<-individualvisits2%>%
-  filter(n >50)%>%
-  select(RFID,n)
-
-#change the column
-names(individualvisits3)[names(individualvisits3) == "n"] <- "totalVisits"  
-
-ggplot(individualvisits3, aes(x=totalVisits)) +geom_histogram(binwidth = 20) 
-
-participants <- unique(individualvisits3$RFID)
-
-participants<-as.data.frame(participants)
-#write.csv(participants, file="FeederExperimentParticipants.csv"))
-
-```
-
-### 5.2 how many RFID devices an individual visits
-```{r}
-# check how many feeders each individual visited
-IDFeeder<-df7%>%
-  count(feeder, RFID, sort = TRUE) 
-IDFeeder<-IDFeeder%>%
-  count(RFID, sort = TRUE) 
-summary(IDFeeder$n)
-boxplot(IDFeeder$n)
-
-##this may also be particularly useful for a nestbox population to see how many other nestboxes individuals visit
-```
-### 5.3 EXERCISE - Time intervals between visits among individuals
-
-Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
-
-- clear your global environment
-
-- reload your database "filteredVisitsFeeders.txt"
-
-- change the datetime column to be a POSIXct class 
-
-- create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
-
-- create a dataframe consisting of individuals that visited a feeder equal or less than 1 second after the previous visitor, perhaps this suggests they are more likely to displace other birds from the feeder. 
-
-- create a dataframe of a list of unique individuals that have landed on a feeder within 1 second of the previous visitor
-
-- create a dataframe that counts the number of times each individual has landed on a feeder within 1 second of the previous visitor
 
 
-```{r}
-#clear global environment
-rm(list = ls(all.names = TRUE))
-
-#upload file 
-
-df<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
-names(df)
-# change datetime column to be POSIXct class
-class(df$datetime)
-df$datetime <- as.POSIXct(df$datetime)
-class(df$datetime)
-
-df1<-df %>%
-  arrange(datetime)%>%
-  group_by(date, feeder) %>%
-  mutate(timeBetweenID = datetime - lag(datetime))%>%
-  arrange(datetime)%>%
-  ungroup()
-
-df1$timeBetweenID <- as.numeric(as.character(df1$timeBetweenID)) 
-class(df1$timeBetweenID)
-
-df2<-df1%>%
-  filter(timeBetweenID <=1)
-
-uniqueDisplacers<-unique(df2$RFID)
-uniqueDisplacers<-as.data.frame(uniqueDisplacers)
-
-individualDisplacements<-df2%>%
-  count(RFID, sort = TRUE) 
-
-```
-
-### 5.4 EXERCISE - Correct and incorrect visits
-
-Imagine feeder01 is rewarded and feeder02 and feeder03 are not rewarded. How would you include a column called "correctChoice" where visits to feeder01 contain the character "Y" and visits to the incorrect feeders contain the character "N"
-```{r}
-
-df7<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
-
-F01Y<-df7%>%
-  filter(feeder=='feeder01')
-F01Y<-cbind(F01Y, correctChoice='Y')
-
-F02N<-df7%>%
-  filter(feeder=='feeder02')
-F02N<-cbind(F02N, correctChoice='N')
-
-F03N<-df7%>%
-  filter(feeder=='feeder03')
-F03N<-cbind(F03N, correctChoice='N')
-
-df7<-bind_rows(F01Y, F02N, F03N)
-
-#Note that there are other methods, but this method uses approaches we learned in today's workshop. As you enhance your R coding skills you'll inevitably refine your code. 
-
-```
-
-
-# END OF FEEDER RFID TUTORIAL 
+# END OF 3. RFID Tutorial: Introduction to RFID data filtering
 
 ```{r}
 sessionInfo()
