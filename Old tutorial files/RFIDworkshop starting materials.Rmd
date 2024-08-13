@@ -1,0 +1,77 @@
+---
+title: "RFID workshop - preparation and materials"
+author: "Gabrielle Davidson"
+date: "2023-04-18"
+output: html_document
+---
+
+### 1. Installations
+Downlaod the latest version of **[R](https://cran.r-project.org/bin/)**  and **[R Studio](https://posit.co/download/rstudio-desktop/)** according to your operating system. Be sure to install R before installing R studio.
+
+
+
+```{r eval=FALSE}
+#Open Rstudio and install the following packages
+install.packages("tidyverse")
+install.packages("rmarkdown")
+install.packages("dplyr")
+install.packages("tidyr")
+install.package("tidyverse")
+install.packages("lubridate")
+install.packages("ggplot2")
+install.packages("stringi")
+install.packages("magrittr")
+
+#if you receive errors, try searching them on google. Sometimes the error message will specify a package that could not be installed or is out of date. Attempt to install that package before installing the package(s) above. Make sure your R version is up to date and that it was installed prior to installing/updating r studio
+```
+### 2. Check R packages installed
+```{r eval=FALSE}
+#load the above packages to check they installed properly 
+library(tidyverse)
+library(rmarkdown)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(stringi)
+library(magrittr)
+
+```
+### 3. Download resources necessary for the workshop
+Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
+
+### 4. Download useful R cheat sheets
+
+[R Markdown Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+
+[dplyr Cheat Sheet](https://gauss.inf.um.es/tabular/www/data-transformation.pdf)
+
+[dplyr and tidyr Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
+
+[lubridate Cheat Sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf)
+
+### 5. Useful literature
+
+These are some useful papers that use RFID/Arduino tech that may be of general interest but not necessary reading material for the workshop 
+
+[Broad-scale applications of the Raspberry Pi: A review and guide for biologists](https://doi.org/10.1111/2041-210X.13652) 
+
+[The OpenFeeder: A flexible automated RFID feeder to measure interspecies and intraspecies differences in cognitive and behavioural performance in wild birds](https://doi.org/10.1111/2041-210X.13931)
+
+[An Arduino-Based RFID Platform for Animal Research](https://doi.org/10.3389/fevo.2019.00257) 
+
+[Inferring dominance interactions from automatically recorded temporal data](https://doi.org/10.1111/eth.12720)
+
+[Multiple factors affect discrimination learning performance, but not between-individual variation, in wild mixed-species flocks of birds](https://doi.org/10.1098/rsos.192107)
+
+[Inhibitory control performance is repeatable over time and across contexts in a wild bird population](https://doi.org/10.1016/j.anbehav.2022.02.007)
+
+[Individual variation in spatial memory performance in wild mountain chickadees from different elevations](https://doi.org/10.1016/j.anbehav.2015.10.015)
+
+[Spatial, temporal and individual-based differences in nest-site visits and subsequent reproductive success in wild great tits]( https://doi.org/10.1111/jav.01740)
+
+
+
+
+[Shazam for bats: Internet of Things for continuous real-time biodiversity monitoring](https://doi.org/10.1049/smc2.12016)
