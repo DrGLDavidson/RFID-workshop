@@ -30,7 +30,7 @@ Download the resources from **[my github page](https://github.com/DrGLDavidson/T
 
 - Positioning of the RFID antenna (e.g. perch, see [The Open Feeder](https://doi.org/10.1111/2041-210X.13931) for 3D printer file). At UEA we use "Selective Feeders" designed by Nature Counters (Dominic Goodwin), who has troubleshooted the positioning of the perch.
 
-- Power – car batteries, AA batteries, solar pannel. Temperature is going to affect power draw. At UEA we use "Selective Feeders" designed by Nature Counters (Dominic Goodwin), which takes 5 AA batteries.  
+- Power – car batteries, AA batteries, solar panel. Temperature is going to affect power draw. At UEA we use "Selective Feeders" designed by Nature Counters (Dominic Goodwin), which takes 5 AA batteries.  
 
 - How many times RFID sends a signal and times when it’s dormant. Secondary detection method with low power that initiates RFID. Nature Counters use a strain gauge on the perch to initiate the RFID. Nestboxes use photodiodes to initiate the RFID. 
 
