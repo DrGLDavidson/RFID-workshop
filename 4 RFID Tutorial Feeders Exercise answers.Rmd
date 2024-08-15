@@ -1,0 +1,178 @@
+---
+title: "4. RFID Tutorial: Exercise answers"
+author: "Gabrielle Davidson"
+date: "2024-08-15"
+output: html_document
+---
+## 1. Get set up
+
+### Open R Studio
+
+### Check R packages installed
+```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
+#load the following packages
+library(tidyverse)
+library(rmarkdown)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(ggplot2)
+library(stringi) #may not need this
+library(magrittr) #may not need this
+
+```
+### Download resources necessary for the workshop
+Download the resources from **[my github page](https://github.com/DrGLDavidson/TOBEUPDATED)**
+
+### **4.4 EXERCISE ANSWERS** 
+```{r}
+
+#clear the global environment so we don't have any conflicts with the next steps 
+
+rm(list = ls(all.names = TRUE))
+
+#choose the appropriate working directory
+
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles")
+
+#call your most recent dataset 
+
+df<-read.delim("Masterdf_noRepeats.txt", header=TRUE)
+head(df)
+names(df)
+
+```
+
+
+## 4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
+(hint: group_by)
+
+## 4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
+(hint: section 3.5)
+
+## 4.4.3 rename the column of the number of visits to "totalVisits".
+
+## 4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
+
+## 4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
+
+
+```{r  }
+
+#5.1 exercise answer
+#a new dataframe that counts the total number of visits per individual. 
+individualvisits2<-df7%>%
+  count(RFID, sort = TRUE) 
+
+individualvisits3<-individualvisits2%>%
+  filter(n >50)%>%
+  select(RFID,n)
+
+#change the column
+names(individualvisits3)[names(individualvisits3) == "n"] <- "totalVisits"  
+
+ggplot(individualvisits3, aes(x=totalVisits)) +geom_histogram(binwidth = 20) 
+
+participants <- unique(individualvisits3$RFID)
+
+participants<-as.data.frame(participants)
+#write.csv(participants, file="FeederExperimentParticipants.csv"))
+
+```
+
+### 5.2 how many RFID devices an individual visits
+```{r}
+# check how many feeders each individual visited
+IDFeeder<-df7%>%
+  count(feeder, RFID, sort = TRUE) 
+IDFeeder<-IDFeeder%>%
+  count(RFID, sort = TRUE) 
+summary(IDFeeder$n)
+boxplot(IDFeeder$n)
+
+##this may also be particularly useful for a nestbox population to see how many other nestboxes individuals visit
+```
+### 4.5 EXERCISE - Time intervals between visits among individuals
+
+Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
+
+- clear your global environment
+
+- reload your database "filteredVisitsFeeders.txt"
+
+- change the datetime column to be a POSIXct class 
+
+- create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
+
+- create a dataframe consisting of individuals that visited a feeder equal or less than 1 second after the previous visitor, perhaps this suggests they are more likely to displace other birds from the feeder. 
+
+- create a dataframe of a list of unique individuals that have landed on a feeder within 1 second of the previous visitor
+
+- create a dataframe that counts the number of times each individual has landed on a feeder within 1 second of the previous visitor
+
+
+```{r}
+#clear global environment
+rm(list = ls(all.names = TRUE))
+
+#upload file 
+
+df<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
+names(df)
+# change datetime column to be POSIXct class
+class(df$datetime)
+df$datetime <- as.POSIXct(df$datetime)
+class(df$datetime)
+
+df1<-df %>%
+  arrange(datetime)%>%
+  group_by(date, feeder) %>%
+  mutate(timeBetweenID = datetime - lag(datetime))%>%
+  arrange(datetime)%>%
+  ungroup()
+
+df1$timeBetweenID <- as.numeric(as.character(df1$timeBetweenID)) 
+class(df1$timeBetweenID)
+
+df2<-df1%>%
+  filter(timeBetweenID <=1)
+
+uniqueDisplacers<-unique(df2$RFID)
+uniqueDisplacers<-as.data.frame(uniqueDisplacers)
+
+individualDisplacements<-df2%>%
+  count(RFID, sort = TRUE) 
+
+```
+
+### 5.4 EXERCISE - Correct and incorrect visits
+
+Imagine feeder01 is rewarded and feeder02 and feeder03 are not rewarded. How would you include a column called "correctChoice" where visits to feeder01 contain the character "Y" and visits to the incorrect feeders contain the character "N"
+```{r}
+
+df7<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
+
+F01Y<-df7%>%
+  filter(feeder=='feeder01')
+F01Y<-cbind(F01Y, correctChoice='Y')
+
+F02N<-df7%>%
+  filter(feeder=='feeder02')
+F02N<-cbind(F02N, correctChoice='N')
+
+F03N<-df7%>%
+  filter(feeder=='feeder03')
+F03N<-cbind(F03N, correctChoice='N')
+
+df7<-bind_rows(F01Y, F02N, F03N)
+
+#Note that there are other methods, but this method uses approaches we learned in today's workshop. As you enhance your R coding skills you'll inevitably refine your code. 
+
+```
+
+# END OF 4. RFID Tutorial: Exercise answers
+
+```{r}
+sessionInfo()
+```
+
