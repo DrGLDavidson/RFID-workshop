@@ -1,7 +1,7 @@
 ---
 title: "4. RFID Tutorial: Quantifying feeder visits"
 author: "Gabrielle Davidson"
-date: "2024-08-13"
+date: "2024-08-15"
 output: html_document
 ---
 ## 1. Get set up
@@ -34,80 +34,113 @@ rm(list = ls(all.names = TRUE))
 
 #choose the appropriate working directory
 
-setwd("F:/RWorkspace/GitHub/RFID-workshop/data")
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles")
 
-#call your most recent dataset of data. 
+#call your most recent dataset 
 
-df<-read.delim("XXXXX.txt", header=TRUE)
+df<-read.delim("Masterdf_noRepeats.txt", header=TRUE)
 head(df)
 names(df)
 
 ```
 
-## 5 Data visualisation and extraction
-
-### 5.1 total number and proportion of visits
+### 4.2 total number of visits per feeder, per day
 ```{r}
 #a new dataframe that counts the total number of visits per feeder per individual, per date. 
-individualvisits<-df7%>%
-  count(feeder, RFID, date, sort = TRUE) 
+individualVisits<-df%>%
+  count(feeder, TagID_hex, date, sort = TRUE) 
+
+#rename n column "visits"
+names(individualVisits)[names(individualVisits) == "n"] <- "visits"  #rename columns
+ names(individualVisits)
+#visualise the data on a figure using ggplot 
+
+individualVisits%>%
+ ggplot(aes(x = TagID_hex, y = visits, color = feeder))+  #specify axis labels and groupings
+  labs(x = "Bird ID", y = "Total visits") + #specify axis labels
+  geom_point(aes(shape=feeder), size=2) + # specify shape and size of points for the variable feeder
+  theme_bw() +   theme(axis.text.x = element_text(angle=90)) #removes the default gray background and rotates x labels. 
+#Note that each data point is a unique date. Therefore this plot gives you information not only on the number of visits they make on a given day, but also over how many days. 
+#Because of the outliers, it's difficult to resolve what is happening between 0 and 20 visits. 
+
+#Restrict axis limits and minimise datapoint overlap
+
+individualVisits%>%
+ ggplot(aes(x = TagID_hex, y = visits, color = feeder))+  #specify axis labels and groupings
+  labs(x = "Bird ID", y = "Total visits") + #specify axis labels
+  geom_point(aes(shape=feeder), size=2) + # specify shape and size of points for the variable feeder
+  theme_bw() +   theme(axis.text.x = element_text(angle=90))+
+  geom_point() + #removes the default gray background and rotates x labels.
+ ylim(0, 25) + #specify axis limits
+    geom_point(position = position_jitter(width = 0.3)) #jitter the points along a horizontal axis to minimise overlap
+
+#can also remove shape for visualization
+
+individualVisits%>%
+ ggplot(aes(x = TagID_hex, y = visits, color = feeder))+  #specify axis labels and groupings
+  labs(x = "Bird ID", y = "Total visits") + #specify axis labels
+  geom_point(size=1) + # specify size ONLY of points for the variable feeder
+  theme_bw() +   theme(axis.text.x = element_text(angle=90))+
+  geom_point() + #removes the default gray background and rotates x labels.
+ ylim(0, 25) + #specify axis limits
+    geom_point(position = position_jitter(width = 0.3))
 
 #a new dataframe that counts the proportion an individual visits a feeder relative to the other feeders, per day. 
-ProportionVisits<-individualvisits%>%
-  group_by(RFID, date)%>%
-  arrange(RFID)%>%
-  mutate(freq = n / sum(n))%>%
+ProportionVisits<-individualVisits%>%
+  group_by(TagID_hex, date)%>%
+  arrange(TagID_hex)%>%
+  mutate(freq = visits / sum(visits))%>%
   ungroup() 
 
 ```
-### **5.1 EXERCISE** 
-- Create a dataframe of the total individual visits across the whole of your experiment, irrespective of feeder
 
-- Create a new dataframe that excludes individuals that visited less than 50 times (i.e. participation threshold censu Reichert et al 2020 RSOS) 
-
-- rename the column of the number of visits to "totalVisits"
-
-- plot a histogram of the number of visits from your new dataframe with an appropriate bar width
-
-- create a dataframe with a list of birds we consider participants and save it as a csv file
-```{r  }
-
-#5.1 exercise answer
-#a new dataframe that counts the total number of visits per individual. 
-individualvisits2<-df7%>%
-  count(RFID, sort = TRUE) 
-
-individualvisits3<-individualvisits2%>%
-  filter(n >50)%>%
-  select(RFID,n)
-
-#change the column
-names(individualvisits3)[names(individualvisits3) == "n"] <- "totalVisits"  
-
-ggplot(individualvisits3, aes(x=totalVisits)) +geom_histogram(binwidth = 20) 
-
-participants <- unique(individualvisits3$RFID)
-
-participants<-as.data.frame(participants)
-#write.csv(participants, file="FeederExperimentParticipants.csv"))
-
-```
-
-### 5.2 how many RFID devices an individual visits
+### 4.3 proportion of visits per feeder, per day
 ```{r}
-# check how many feeders each individual visited
-IDFeeder<-df7%>%
-  count(feeder, RFID, sort = TRUE) 
-IDFeeder<-IDFeeder%>%
-  count(RFID, sort = TRUE) 
-summary(IDFeeder$n)
-boxplot(IDFeeder$n)
 
-##this may also be particularly useful for a nestbox population to see how many other nestboxes individuals visit
+#a new dataframe that counts the proportion an individual visits a feeder relative to the other feeders, per day. 
+ProportionVisits<-individualVisits%>%
+  group_by(TagID_hex, date)%>%
+  arrange(TagID_hex)%>%
+  mutate(proportion = visits / sum(visits))%>%
+  ungroup() 
+
+
+#plot proportions. Better to use the original dataframe as the following code counts each line as a visit
+
+ggplot(df,aes(x=factor(TagID_hex),fill=factor(feeder)))+ 
+  geom_bar(position="fill")+
+  geom_text(aes(label=..count..),stat='count',position=position_fill(vjust=0.5), angle=90, size=3) +
+  #scale_x_discrete (labels = c("F01","F02","F03")) +
+  theme_bw() +   theme(panel.grid.major = element_blank(),
+                       panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), 
+                       panel.border = element_rect(linetype = "solid", colour = "black", size=.8)) +
+  #scale_fill_manual("Feeder", values = c("1" = "gray49", "0" = "gray84"))+
+  theme(text=element_text(size=12,  family="serif"),
+        axis.ticks = element_line(colour = "black", size = .6)) +
+  labs(x = "Bird ID") +
+  labs(y = "Proportion of visits") +
+  theme_bw() +   theme(axis.text.x = element_text(angle=90))
+
 ```
-### 5.3 EXERCISE - Time intervals between visits among individuals
+
+### **4.4 EXERCISE** Visits
+## 4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
+(hint: group_by)
+
+## 4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
+(hint: section 3.5)
+
+## 4.4.3 rename the column of the number of visits to "totalVisits".
+
+## 4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
+
+## 4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
+
+### 4.5 EXERCISE - Time intervals 
 
 Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
+
+### THIS NEEDS EDITING 
 
 - clear your global environment
 
@@ -158,32 +191,10 @@ individualDisplacements<-df2%>%
 
 ```
 
-### 5.4 EXERCISE - Correct and incorrect visits
+### 4.6 EXERCISE - Correct and incorrect visits
 
-Imagine feeder01 is rewarded and feeder02 and feeder03 are not rewarded. How would you include a column called "correctChoice" where visits to feeder01 contain the character "Y" and visits to the incorrect feeders contain the character "N"
-```{r}
-
-df7<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
-
-F01Y<-df7%>%
-  filter(feeder=='feeder01')
-F01Y<-cbind(F01Y, correctChoice='Y')
-
-F02N<-df7%>%
-  filter(feeder=='feeder02')
-F02N<-cbind(F02N, correctChoice='N')
-
-F03N<-df7%>%
-  filter(feeder=='feeder03')
-F03N<-cbind(F03N, correctChoice='N')
-
-df7<-bind_rows(F01Y, F02N, F03N)
-
-#Note that there are other methods, but this method uses approaches we learned in today's workshop. As you enhance your R coding skills you'll inevitably refine your code. 
-
-```
-
-
+## 4.6.1 Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
+(hint: filter, then cbind)
 # END OF FEEDER RFID TUTORIAL 
 
 ```{r}

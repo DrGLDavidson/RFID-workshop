@@ -247,7 +247,7 @@ rm(list = ls(all.names = TRUE))
 
 ```
 
-### 4.4 Checking for RFID malfunction. In otherwords, periods of missing data.
+### 3.4 Checking for RFID malfunction. In otherwords, periods of missing data.
 
 ```{r}
 
@@ -294,7 +294,7 @@ These three feeders have very different distributions of visits, and so this is 
 
 You will need to consider your experimental design and what is expected. In fact this data is from feeders that contained different food types and one feeder was only available for a short time period compared to the others. 
 
-### 4.5 Removing periods of missing data.
+### 3.5 Removing periods of missing data.
 ## If one of the feeders malfunctioned for a day and the entire experiment depends on all feeders working in tandem, this may be good reason to remove data for this day, but see below. 
 ```{r}
 #first check the dates data was collected
