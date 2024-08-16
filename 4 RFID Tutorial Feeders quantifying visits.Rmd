@@ -4,7 +4,7 @@ author: "Gabrielle Davidson"
 date: "2024-08-15"
 output: html_document
 ---
-## 1. Get set up
+## 4. Get set up
 
 ### Open R Studio
 
@@ -195,7 +195,7 @@ individualDisplacements<-df2%>%
 
 ## 4.6.1 Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
 (hint: filter, then cbind)
-# END OF FEEDER RFID TUTORIAL 
+# END OF 4. RFID Tutorial: Quantifying feeder visits 
 
 ```{r}
 sessionInfo()
