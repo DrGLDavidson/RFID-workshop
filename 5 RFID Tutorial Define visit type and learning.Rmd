@@ -11,7 +11,7 @@ output: html_document
 ### Check R packages installed
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
 #load the following packages
-library(tidyverse)
+library(tidyverse) #some of the packages below are included in tidyverse
 library(rmarkdown)
 library(dplyr)
 library(tidyr)
@@ -23,12 +23,11 @@ library(magrittr) #may not need this
 # These are new and need to be installed 
 library(writexl)
 library(readxl)
-library(stringi)
 library(zoo) #rolling function
 
 ```
 ### Download resources necessary for the workshop
-Download the resources from **[my github page](https://github.com/DrGLDavidson/TOBEUPDATED)**
+Download the resources from **[my github repository](https://github.com/DrGLDavidson/RFID-workshop)**
 
 ### 5.1 import your dataset to your environment from your working directory. 
 
@@ -52,7 +51,7 @@ names(df)
 
 ### 5.2 Quantifying correct and incorrect visits (i.e. if a bird landed on its assigned feeder according to ListA logic)
 
-``````{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
+```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
 
 #how many individual tags (birds) in our dataset
 length(unique(df$TagID_hex)) 
@@ -98,8 +97,47 @@ df5 <- df4 %>%
 
 write.table(df5, file = "Masterdf_correctVisits.txt",sep="\t",row.names=FALSE)
 
-rm(list = ls(all.names = TRUE))
 
 ```
+
+### 5.3 Quantifying learning (i.e. if a bird visits its assigned feeder at a given criterion).
+## In this example, we will use the criterion of 80% correct visits, across a minimum of 20 visits. 
+
+```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
+#filter out birds that have visited at least 20 times
+
+df20 <- df5 %>%
+  group_by(TagID_hex) %>%
+  mutate(visit_count = n()) %>%  #what variable is visit count
+  filter(visit_count >= 20) %>%
+  ungroup() %>%
+  select(-visit_count) 
+
+#function for when criterion met first
+success_check <- function(correct ){
+  n <- length(correct)  #what variable is correct
+ if (n < 20){
+   return(NA)
+ }
+  for (i in 1:(n-19)) {
+    window <- correct[i: (i+ 19)]
+    if(window[1] == 1 && sum(window)/ 20 >= 0.8){
+      return(i+19)
+    }
+    
+  }
+  return(NA)
+}
+
+#### birds visiting >20 ####
+
+#apply criterion check function
+results20 <- df5 %>% 
+  group_by(TagID_hex) %>% 
+  summarise(criterion = success_check(correctVisit))  ##what is success_check?
+head(results20) #function works well 
+
+```
+
 
 # END OF 5. RFID Tutorial: Define visit type and learning
