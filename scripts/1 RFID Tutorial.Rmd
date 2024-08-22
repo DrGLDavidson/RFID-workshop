@@ -1,6 +1,6 @@
 ---
 title: "1. RFID Tutorial: requirements and resources"
-author: "Gabrielle Davidson"
+author: "Gabrielle Davidson - School of Biological Sciences, University of East Anglia"
 date: "2024-08-08"
 output: html_document
 ---
@@ -21,6 +21,10 @@ install.packages("lubridate")
 install.packages("ggplot2")
 install.packages("stringi")
 install.packages("magrittr")
+#for tutorial 5
+install.packages("writexl")
+install.packages("readxl")
+install.packages("zoo")
 
 #If you receive errors, search them on google or ask chatgpt. 
 #Sometimes the error message will specify a package that could not be installed or is out of date. 
@@ -43,7 +47,7 @@ library(magrittr)
 ```
 
 ### 1.3 Download raw datasets necessary for the tutorial and save them in a workspace folder
-Download the resources from **[my github page](https://github.com/DrGLDavidson/TOBEUPDATED)**
+Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
 
 Create and name a workspace. This is a folder on your computer that tells R where to obtain files. 
 
@@ -59,7 +63,7 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 ### 1.5 Useful literature
 
-# Davidson papers using RFID to measure behaviour in wild great tits and blue tits at feeders and nestboxes: 
+#### Davidson papers using RFID to measure behaviour in wild great tits and blue tits at feeders and nestboxes: 
 
 [Multiple factors affect discrimination learning performance, but not between-individual variation, in wild mixed-species flocks of birds](https://doi.org/10.1098/rsos.192107)
 
@@ -67,7 +71,7 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 [Inhibitory control performance is repeatable over time and across contexts in a wild bird population](https://doi.org/10.1016/j.anbehav.2022.02.007)
 
-# Other groups using RFID to measure behaviour in alternative ways: 
+#### Other groups using RFID to measure behaviour in alternative ways: 
 
 [Inferring dominance interactions from automatically recorded temporal data](https://doi.org/10.1111/eth.12720)
 
@@ -75,7 +79,7 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 [Spatial, temporal and individual-based differences in nest-site visits and subsequent reproductive success in wild great tits]( https://doi.org/10.1111/jav.01740)
 
-# General autonomous data collection methodology and approaches: 
+#### General autonomous data collection methodology and approaches: 
 
 [Broad-scale applications of the Raspberry Pi: A review and guide for biologists](https://doi.org/10.1111/2041-210X.13652) 
 
