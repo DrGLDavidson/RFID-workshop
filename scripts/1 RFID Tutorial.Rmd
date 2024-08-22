@@ -5,7 +5,7 @@ date: "2024-08-08"
 output: html_document
 ---
 
-#### Welcome to The RFID Tutorials - a set of R scripts with example data to get you started with performing ecological research with wild birds using autonomous data collection methods. Here you will learn the basics of manipulating and preparing data collected from RFID computerised feeders that will later be used for statistical testing (not covered here).  
+#### Welcome to The RFID Tutorials - a set of R scripts with example data to get you started with performing ecological research with wild birds using autonomous data collection methods. Here you will learn the basics of manipulating and preparing data collected from RFID computerised feeders that will later be used for statistical testing (not covered here). You will use R programming to manipulate so-called streams of data into numbers that represent each individual birds' behaviour. Some prior knowledge of R's basic functions and uses is a pre-requisite, particularly if you are to flexibly apply these tutorials to your unique datasets. 
 
 ### 1.1 Installations
 Downlaod the latest version of **[R](https://cran.r-project.org/bin/)**  and **[R Studio](https://posit.co/download/rstudio-desktop/)** according to your operating system. Be sure to install R before installing R studio.
