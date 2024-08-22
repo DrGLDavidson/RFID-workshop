@@ -4,7 +4,7 @@ author: "Gabrielle Davidson - School of Biological Sciences, University of East 
 date: "2024-08-15"
 output: html_document
 ---
-## 1. Get set up
+## 4. Get set up
 
 ### Open R Studio
 

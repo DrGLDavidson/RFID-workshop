@@ -11,9 +11,9 @@
 
 <meta name="author" content="Gabrielle Davidson - School of Biological Sciences, University of East Anglia" />
 
-<meta name="date" content="2024-08-08" />
+<meta name="date" content="2024-08-12" />
 
-<title>1. RFID Tutorial: requirements and resources</title>
+<title>2. RFID Tutorial: Introduction to RFID use and data handling</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,116 +350,476 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">1. RFID Tutorial: requirements and
-resources</h1>
+<h1 class="title toc-ignore">2. RFID Tutorial: Introduction to RFID use
+and data handling</h1>
 <h4 class="author">Gabrielle Davidson - School of Biological Sciences,
 University of East Anglia</h4>
-<h4 class="date">2024-08-08</h4>
+<h4 class="date">2024-08-12</h4>
 
 </div>
 
 
-<div id="installations" class="section level3">
-<h3>1.1 Installations</h3>
-<p>Downlaod the latest version of <strong><a href="https://cran.r-project.org/bin/">R</a></strong> and <strong><a href="https://posit.co/download/rstudio-desktop/">R Studio</a></strong>
-according to your operating system. Be sure to install R before
-installing R studio.</p>
-<pre class="r"><code>#Open Rstudio and install the following packages
-install.packages(&quot;tidyverse&quot;)
-install.packages(&quot;rmarkdown&quot;)
-install.packages(&quot;dplyr&quot;)
-install.packages(&quot;tidyr&quot;)
-install.package(&quot;tidyverse&quot;)
-install.packages(&quot;lubridate&quot;)
-install.packages(&quot;ggplot2&quot;)
-install.packages(&quot;stringi&quot;)
-install.packages(&quot;magrittr&quot;)
-#for tutorial 5
-install.packages(&quot;writexl&quot;)
-install.packages(&quot;readxl&quot;)
-install.packages(&quot;zoo&quot;)
-
-#If you receive errors, search them on google or ask chatgpt. 
-#Sometimes the error message will specify a package that could not be installed or is out of date. 
-#Attempt to install missing packages before installing the package(s) above. 
-#Make sure your R version is up to date and that it was installed prior to installing/updating r studio</code></pre>
+<div id="get-set-up" class="section level2">
+<h2>1. Get set up</h2>
+<div id="open-r-studio" class="section level3">
+<h3>Open R Studio</h3>
 </div>
-<div id="check-r-packages-installed-by-loading-them" class="section level3">
-<h3>1.2 Check R packages installed by loading them</h3>
-<pre class="r"><code>#load the above packages to check they installed properly 
-library(tidyverse)
+<div id="check-r-packages-installed" class="section level3">
+<h3>Check R packages installed</h3>
+<pre class="r"><code>#load the following packages
+library(tidyverse) #some of the below packages are included in tidyverse
 library(rmarkdown)
 library(dplyr)
 library(tidyr)
-library(tidyverse)
 library(lubridate)
 library(ggplot2)
-library(stringi)
-library(magrittr)</code></pre>
+library(stringi) #may not need this
+library(magrittr) #may not need this</code></pre>
 </div>
-<div id="download-raw-datasets-necessary-for-the-tutorial-and-save-them-in-a-workspace-folder" class="section level3">
-<h3>1.3 Download raw datasets necessary for the tutorial and save them
-in a workspace folder</h3>
+<div id="download-resources-necessary-for-the-workshop" class="section level3">
+<h3>Download resources necessary for the workshop</h3>
 <p>Download the resources from <strong><a href="https://github.com/DrGLDavidson/RFID-workshop">my github
 page</a></strong></p>
-<p>Create and name a workspace. This is a folder on your computer that
-tells R where to obtain files.</p>
 </div>
-<div id="download-useful-r-cheat-sheets" class="section level3">
-<h3>1.4 Download useful R cheat sheets</h3>
-<p><a href="https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf">R
+</div>
+<div id="introduction-to-rfid-for-animal-behaviour" class="section level2">
+<h2>2.1 Introduction to RFID for animal behaviour</h2>
+<p><strong>Considerations when designing RFID devices:</strong></p>
+<ul>
+<li><p>Positioning of the RFID antenna (e.g. perch, see <a href="https://doi.org/10.1111/2041-210X.13931">The Open Feeder</a> for
+3D printer file). At UEA we use “Selective Feeders” designed by Nature
+Counters (Dominic Goodwin), who has troubleshooted the positioning of
+the perch.</p></li>
+<li><p>Power – car batteries, AA batteries, solar panel. Temperature is
+going to affect power draw. At UEA we use “Selective Feeders” designed
+by Nature Counters (Dominic Goodwin), which takes 5 AA
+batteries.</p></li>
+<li><p>How many times RFID sends a signal and times when it’s dormant.
+Secondary detection method with low power that initiates RFID. Nature
+Counters use a strain gauge on the perch to initiate the RFID. Nestboxes
+use photodiodes to initiate the RFID.</p></li>
+<li><p>Water ingress.</p></li>
+<li><p>Squirrels, cattle, people etc.</p></li>
+</ul>
+<p><strong>Saving data in the field:</strong></p>
+<p>Depending on your RFID output, you’ll likely have information on what
+RFID device the data comes from. If it doesn’t, or even if it does,
+devices are mobile, so you must keep good records of where that device
+was located at the time of data collection and name your file/folder
+accordingly.</p>
+<ul>
+<li><p>Have a naming system for your RFID equipment and data storage
+device (e.g. SD card) and write it on outside of these devices, and name
+them electronically within them.</p></li>
+<li><p>Depending on your RFID equipment, you may require a laptop on
+site to download data from the device, or to deploy/initiate the
+program/change the program settings/update the time and date. Ideal
+scenario is a display where this can be edited manually
+(e.g. time/date), and data storage that can be swapped out (e.g. SD
+card) so you don’t need to carry a laptop.</p></li>
+<li><p>I encourage you to keep a written notebook in the field to write
+time/date every time an RFID device is deployed, the name of the SD card
+notebook in the field when it was deployed and when it was
+removed</p></li>
+<li><p>If you come to a device to see that it has failed, make a log of
+this. Determining whether a device failed from the RFID visits is not a
+very reliable method to know if it failed or not because it could be
+because birds weren’t visiting for example. Ideally a firmware program
+that has additional data files that have performance-based output
+(e.g. RFID signal, battery power) can allow you to know for sure when
+failures occurred and why. We suggest a readme.txt file describing the
+issues, any troubleshooting steps etc. This should be saved in a folder
+associated with that feeder dataset.</p></li>
+<li><p>Come ready with a backup device to swap out with failed devices
+that cannot be troubleshooted in the field and need to be brought back
+to the ‘workshop’.</p></li>
+<li><p>When saving output, use a standardised file name system that
+contains information about the location/treatment. I suggest all files
+start with the date and should be in the format year/month/day so they
+appear chronologically in your folders. Alternatively you may want them
+sorted by location/nestbox, so start the file name with that info
+(e.g. “NB01_220427)</p></li>
+</ul>
+<p><strong>Data management</strong></p>
+<ul>
+<li><p>The best practice is to work off a single master database always.
+If you have multiple copies of different formats you’re prone to errors
+accumulating after each database is created, and forgetting which
+database was filtered in which way. Deviations from this are justifiable
+if you want your database to be organised according to site/nest box, in
+which case you are working from subsets of master data. Just be clear to
+label these as the master data files and always pull from these when
+running analyses or generating larger datasets.</p></li>
+<li><p>Option 1: Wait for all data to come in and create a single
+database file when all files are available</p></li>
+<li><p>Option 2: Create a master database as each file comes in
+throughout the field season. This option is idea because you are likely
+going to need to analyse data as the experiment is happening, otherwise
+you are doing an experiment “blind” and you may detect issues that can
+be corrected at the time.</p></li>
+</ul>
+<p>In both cases, and especially in Option 2, there is a risk that you
+accidentally duplicate datasets if you merge it with file containing
+multiple datasets from different dates. <em>It is crucial that you keep
+a record of the code and the files imported so you can error check</em>.
+As we work through examples you will see just how important this is and
+why we will be using R Markdown and using the knit function each time
+data is imported and master datasets are generated.</p>
+<p>Another option is to create an R function. This means you specify
+arguments (e.g. file names, dataframes) at the top of the function,
+rather than editing multiple lines of code to accommodate the
+appropriate files/dataframes. The latter can lead to errors if you don’t
+update one or more of the dataframe or file names accordingly.</p>
+</div>
+<div id="importing-rfid-data-and-generating-master-database" class="section level2">
+<h2>2.2 Importing RFID data and generating master database</h2>
+<div id="working-directory-and-files" class="section level3">
+<h3>2.2.1 working directory and files</h3>
+<p>Imagine you have collected data from three RFID feeders deployed in
+the field. When you save the data from the SD card, you save it
+according to the date you collected it (YYMMDD), and the feeder ID (in
+this case F01, F02, F03)</p>
+<pre class="r"><code>require(&quot;knitr&quot;)
+opts_knit$set(root.dir = &quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData&quot;)
+
+#set working directory so R knows where to find and save data
+setwd(&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData&quot;)
+
+#specify the working directly as the object &quot;path&quot;
+
+path&lt;-&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData&quot;
+
+#use the function list.dirs to see all the folders in your directory
+list.dirs(path, full.names = TRUE, recursive = TRUE)
+
+#now use the function list.files to see what files are in that folder and all subfolders (recursive=TRUE). 
+list.files(path, pattern=NULL, all.files=FALSE,
+    full.names=FALSE, recursive = TRUE)
+
+#now use the function to look into one of the subfolders
+
+path2&lt;-&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F01_220206&quot;
+list.files(path2, pattern=NULL, all.files=FALSE,
+    full.names=FALSE, recursive = TRUE)</code></pre>
+<p>what you are seeing are a number of files that start with a
+alphanumberic code, followed by two letters. “C1935” refers to the
+feeder’s hardware ID code. This can never change. The last two letters
+refer to the output file type. For example, FD refers to “feeder door”
+and has information about whether the servo door opened (o) or stayed
+closed (c) upon detection of a bird. For our purposes, we will focus on
+the RT files only.</p>
+</div>
+<div id="viewing-files-and-preparing-for-compiling-them-into-a-single-dataframe" class="section level3">
+<h3>2.2.2 Viewing files and preparing for compiling them into a single
+dataframe</h3>
+<pre class="r"><code>#the files are text files so you need to use a function that calls .txt. files
+
+setwd(path2) #since we already created path2 as folder F01_220206, lets start with that.
+getwd() #double check you are now in the appropriate working directory</code></pre>
+<pre><code>## [1] &quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F01_220206&quot;</code></pre>
+<pre class="r"><code># Call the RT file into your environment and call it df1 (dataframe 1)
+df1&lt;-read.delim(&quot;C1935RT.txt&quot;, header=TRUE)
+
+names(df1) #see the column headers</code></pre>
+<pre><code>##  [1] &quot;F&quot;         &quot;Date&quot;      &quot;Hmsec&quot;     &quot;ID&quot;        &quot;Event&quot;     &quot;Channel&quot;  
+##  [7] &quot;Dur&quot;       &quot;Clks&quot;      &quot;Freq&quot;      &quot;Edges&quot;     &quot;Reps&quot;      &quot;Type&quot;     
+## [13] &quot;TagID_hex&quot; &quot;Mfr&quot;       &quot;TagID&quot;</code></pre>
+<pre class="r"><code>head(df1) # see the first few rows and headers</code></pre>
+<pre><code>##    F                Date Hmsec     ID Event Channel    Dur  Clks   Freq Edges
+## 1 D  2022-02-04 09:16:45   196 c1935     82       0 114855 61559 126720     1
+## 2 D  2022-02-04 09:17:11   896 c1935     83       0 106855     0 125184     0
+## 3 D  2022-02-04 09:17:11   648 c1935     83       0 114855    27 126208   156
+## 4 D  2022-02-04 09:17:12   650 c1935     83       0 106855    37 126208   843
+## 5 D  2022-02-04 09:18:30   270 c1935     84       0      2 62210 126208     1
+## 6 D  2022-02-04 09:20:09   667 c1935     85       0 119946 17899 126464     1
+##   Reps Type  TagID_hex Mfr TagID
+## 1    1    0             NA    NA
+## 2    0    0             NA    NA
+## 3    1    1 0300024FEF  NA    NA
+## 4    1    0             NA    NA
+## 5    1    0             NA    NA
+## 6    1    0             NA    NA</code></pre>
+<p>what you are seeing are time stamped events every time the strain
+gauge perch is triggered. If there is an associated RFID tag read, it
+appears under the column header “TagID_hex”. You can see the ID is c1935
+which matches our folder name. Dur Clks Freq and Edges refer to some
+RFID parameters, which may be useful if there are any issues with
+detecting tags (there are lots of events without tags). the most
+important headers for downstream analyses are Date, Hmsec, ID and
+TagID_hex. But we will keep all headers. you should notice that although
+we have the ID of the feeder, that does not provide us with any
+information about where the feeder was located in our experimental
+design which is fundamental to analyses. If you are to compile a
+dataframe that contains data from multiple different feeders, you must
+know which data comes from which feeder.</p>
+</div>
+<div id="adding-a-column-to-indicate-which-feeder-your-data-belongs-to" class="section level3">
+<h3>2.2.3 Adding a column to indicate which feeder your data belongs
+to</h3>
+<pre class="r"><code>#first look at your df1 in your global environment. It should say 337 obs. (observations) of 15 variables. 
+
+df1&lt;-cbind(df1, feeder=&#39;F01&#39;) #add a column named feeder and have all the values as F01
+
+#now df1 should say 16 variables. But do a sanity check:
+
+head(df1)</code></pre>
+<pre><code>##    F                Date Hmsec     ID Event Channel    Dur  Clks   Freq Edges
+## 1 D  2022-02-04 09:16:45   196 c1935     82       0 114855 61559 126720     1
+## 2 D  2022-02-04 09:17:11   896 c1935     83       0 106855     0 125184     0
+## 3 D  2022-02-04 09:17:11   648 c1935     83       0 114855    27 126208   156
+## 4 D  2022-02-04 09:17:12   650 c1935     83       0 106855    37 126208   843
+## 5 D  2022-02-04 09:18:30   270 c1935     84       0      2 62210 126208     1
+## 6 D  2022-02-04 09:20:09   667 c1935     85       0 119946 17899 126464     1
+##   Reps Type  TagID_hex Mfr TagID feeder
+## 1    1    0             NA    NA    F01
+## 2    0    0             NA    NA    F01
+## 3    1    1 0300024FEF  NA    NA    F01
+## 4    1    0             NA    NA    F01
+## 5    1    0             NA    NA    F01
+## 6    1    0             NA    NA    F01</code></pre>
+<pre class="r"><code>#we can repeat this for more feeders. We need to specify a new path and working directory, lets do that for feeder 2, with the same date. 
+
+path3&lt;-&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F02_220206&quot;
+setwd(path3)
+
+#double check you are in the correct directory 
+getwd()</code></pre>
+<pre><code>## [1] &quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F02_220206&quot;</code></pre>
+<pre class="r"><code>#if you want to check the file names: 
+
+list.files(path3, pattern=NULL, all.files=FALSE,
+    full.names=FALSE, recursive = TRUE)</code></pre>
+<pre><code>##  [1] &quot;C1931AD.TXT&quot; &quot;C1931DG.TXT&quot; &quot;C1931FD.TXT&quot; &quot;C1931LA.TXT&quot; &quot;C1931LB.TXT&quot;
+##  [6] &quot;C1931LC.TXT&quot; &quot;C1931LH.TXT&quot; &quot;C1931LI.TXT&quot; &quot;C1931LV.TXT&quot; &quot;C1931PA.TXT&quot;
+## [11] &quot;C1931PE.TXT&quot; &quot;C1931RT.TXT&quot; &quot;C1931SY.TXT&quot; &quot;C1931W1.TXT&quot; &quot;logger.ini&quot;</code></pre>
+<pre class="r"><code>df2&lt;-read.delim(&quot;C1931RT.txt&quot;, header=TRUE)
+
+names(df2) #see the column headers</code></pre>
+<pre><code>##  [1] &quot;F&quot;         &quot;Date&quot;      &quot;Hmsec&quot;     &quot;ID&quot;        &quot;Event&quot;     &quot;Channel&quot;  
+##  [7] &quot;Dur&quot;       &quot;Clks&quot;      &quot;Freq&quot;      &quot;Edges&quot;     &quot;Reps&quot;      &quot;Type&quot;     
+## [13] &quot;TagID_hex&quot; &quot;Mfr&quot;       &quot;TagID&quot;</code></pre>
+<pre class="r"><code>head(df2) # see the first few rows and headers</code></pre>
+<pre><code>##    F                Date Hmsec     ID Event Channel    Dur   Clks   Freq Edges
+## 1 D  2022-01-21 08:29:28   977 c1931  15519       0 122438 161617 124416  3482
+## 2 D  2022-01-25 09:28:29  1011 c1931  15520       0  44301  30396 137984     1
+## 3 T  2022-02-04 09:12:44   232 c1931  15521      NA     NA     NA     NA    NA
+## 4  S                        NA           NA      NA     NA     NA     NA    NA
+## 5 D  2022-01-25 09:28:44   246 c1931  15521       0    908 998690 124672  5130
+## 6 D  2022-02-04 09:16:04   843 c1931  15522       0 130917  18204 164608     1
+##   Reps Type TagID_hex Mfr TagID
+## 1   20    0            NA    NA
+## 2    1    0            NA    NA
+## 3   NA   NA            NA    NA
+## 4   NA   NA            NA    NA
+## 5   84    0            NA    NA
+## 6    1    0            NA    NA</code></pre>
+<pre class="r"><code>#this file has the same headers as df1. Lets add the feeder column and values. 
+
+df2&lt;-cbind(df2, feeder=&#39;F02&#39;) #add a column named feeder and have all the values as F02
+names(df2) #see the column headers</code></pre>
+<pre><code>##  [1] &quot;F&quot;         &quot;Date&quot;      &quot;Hmsec&quot;     &quot;ID&quot;        &quot;Event&quot;     &quot;Channel&quot;  
+##  [7] &quot;Dur&quot;       &quot;Clks&quot;      &quot;Freq&quot;      &quot;Edges&quot;     &quot;Reps&quot;      &quot;Type&quot;     
+## [13] &quot;TagID_hex&quot; &quot;Mfr&quot;       &quot;TagID&quot;     &quot;feeder&quot;</code></pre>
+<pre class="r"><code>head(df2) # see the first few rows and headers</code></pre>
+<pre><code>##    F                Date Hmsec     ID Event Channel    Dur   Clks   Freq Edges
+## 1 D  2022-01-21 08:29:28   977 c1931  15519       0 122438 161617 124416  3482
+## 2 D  2022-01-25 09:28:29  1011 c1931  15520       0  44301  30396 137984     1
+## 3 T  2022-02-04 09:12:44   232 c1931  15521      NA     NA     NA     NA    NA
+## 4  S                        NA           NA      NA     NA     NA     NA    NA
+## 5 D  2022-01-25 09:28:44   246 c1931  15521       0    908 998690 124672  5130
+## 6 D  2022-02-04 09:16:04   843 c1931  15522       0 130917  18204 164608     1
+##   Reps Type TagID_hex Mfr TagID feeder
+## 1   20    0            NA    NA    F02
+## 2    1    0            NA    NA    F02
+## 3   NA   NA            NA    NA    F02
+## 4   NA   NA            NA    NA    F02
+## 5   84    0            NA    NA    F02
+## 6    1    0            NA    NA    F02</code></pre>
+<pre class="r"><code>#we can repeat this for the 3rd feeder too. We can also skip having to look in the directory by doing the following:
+
+path4&lt;-&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F03_220206&quot;
+setwd(path4)
+
+RTfile&lt;-list.files(path4, pattern = &quot;RT&quot;)
+df3&lt;-lapply(RTfile, read.delim) #this will appear as a list in your environment
+df3&lt;-as.data.frame(df3) #turn it into a dataframe
+head(df3)</code></pre>
+<pre><code>##    F                Date Hmsec     ID Event Channel    Dur  Clks   Freq Edges
+## 1 D  2022-02-04 09:16:34   121 c1937   2738       0 109071 16446 126464     1
+## 2 D  2022-02-04 09:16:54   271 c1937   2739       0 106788     0 125952     0
+## 3 D  2022-02-04 09:16:54    73 c1937   2739       0 113812    27 125952   156
+## 4 D  2022-02-04 09:18:20   171 c1937   2740       0 109091 10831 126464     1
+## 5 D  2022-02-04 09:21:12   445 c1937   2741       0 109071     0      0     0
+## 6 D  2022-02-04 09:23:36   421 c1937   2742       0 109071 33838 126208     1
+##   Reps Type  TagID_hex Mfr TagID
+## 1    1    0             NA    NA
+## 2    0    0             NA    NA
+## 3    1    1 0300024FEF  NA    NA
+## 4    1    0             NA    NA
+## 5    1    0             NA    NA
+## 6    1    0             NA    NA</code></pre>
+<pre class="r"><code>df3&lt;-cbind(df3, feeder=&#39;F03&#39;) #add a column named feeder and have all the values as F03</code></pre>
+</div>
+<div id="bind-rows-from-different-data-frames-into-a-single-dataframes" class="section level3">
+<h3>2.2.4 bind rows from different data frames into a single
+dataframes</h3>
+<pre class="r"><code>#Because you have now indicated which feeder each line of data comes from, you can safely combine all dataframes into one. They all have the same number of headers, and the headers are spelled the same, so this can be done without any additional changes.
+
+d220206&lt;-bind_rows(df1,df2,df3)  #I have named this according to the date of the folder these files came from. 
+
+#you should now see d220206 in your environment and there should be 1526 observations
+
+377+780+369  #the combined number of observations from df1, df2 and df3 =1526, which is expected. </code></pre>
+<pre><code>## [1] 1526</code></pre>
+<pre class="r"><code>#you should now be able to do this for the other folder dated 220206. Because you may use a similar naming system, or copy and paste the code above and edit the code, it is good practice to remove the dataframes that are no longer needed. 
+
+rm(df1,df2,df3) #this should remove them from your environment. </code></pre>
+</div>
+<div id="exercise" class="section level3">
+<h3><strong>2.3 EXERCISE</strong></h3>
+<p>There are three more files in the folder that come from different
+feeders that need to be added to the master database.</p>
+<p>Make sure to</p>
+<ul>
+<li><p>add the feeder name column</p></li>
+<li><p>save a new Master database with <strong>THE DATE OF THE LAST SET
+OF FILES YYMMDD</strong></p></li>
+</ul>
+<pre class="r"><code>#if you use the same naming system as before, you will then end up with a dataframe named d220209. 
+
+#bind rows for your dataframes from different dates
+
+dfinal&lt;-bind_rows(d220206,d220209)  #the order of the dfs as arguments will determine the order in which they appear in the dataframe. You can change this, but you could here choose the most contemporary date to come second. </code></pre>
+</div>
+<div id="saving-your-work-and-returning-to-it-later" class="section level3">
+<h3>2 .4.1 Saving your work and returning to it later</h3>
+<pre class="r"><code>#by default, R will save to your current working directory. So lets change it to a higher directory than we are currently in. Otherwise it may be hard to find which subfolder to save into. You could also create a folder specifically for saving into. 
+
+setwd(&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData&quot;)
+
+write.table(dfinal, file = &quot;Masterdf_220209.txt&quot;,sep=&quot;\t&quot;,row.names=FALSE)  #we are saving the dataframe called dfinal as a txt file into our working directory 
+
+#you should be able to view this using the following code: 
+list.dirs(path = &quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData&quot;, full.names = TRUE, recursive = FALSE) #notice that recursive has been changed to F as we only want to see what is in that particular folder, not subfolders. 
+
+#Save your R script, and if using github, update the current branch, generate a pull request and merge to your main branch. 
+#when you close R, it may ask you if you want to save the workspace image. This means you can open that saved file with the data and values from your global environment as you left off. You can select no if that&#39;s not relevant. But if you were in the middle of something and needed to stop, that is a useful option. 
+
+#If you would like to clear your global environment entirely. 
+rm(list = ls())</code></pre>
+</div>
+<div id="use-r-markdown-to-keep-track-of-your-data-importing-and-saving" class="section level3">
+<h3>Use R Markdown to keep track of your data importing and saving</h3>
+<p>Perhaps in the previous exercise you saved time by cutting and
+pasting repetitive code and changing the df and feeder number values?.
+What if you forgot to change the feeder number, or one of the df names?
+If you are going to do that, make sure you copy and paste, rather than
+write over code (i.e. replacing df1 with df2 but not keeping the script
+where you were working with df1). It is important to keep a record of
+every code you run. But there’s still the possibility that over the
+course of repetitive copy-pasted code, you lose track of what was done
+when. R markdown is an excellent tool for keeping track of what you have
+done and sharing your code with others. Later, as you become more
+familiar with R you will also be able to write your own functions that
+will also minimise the chance of code errors/typos.</p>
+<p>But for now, lets try R Markdown:</p>
+<ul>
+<li><p>In R studio go to File&gt;New File&gt; R Markdown…</p></li>
+<li><p>Input a title and click ok.</p></li>
+<li><p>Delete all the default text except the title</p></li>
+<li><p>On the top right hand corner of the R markdown window is a green
+square with a plus sign and “c”. Click that arrow and chose r
+script</p></li>
+<li><p>You can now write your r script in this gray area</p></li>
+<li><p>Use the “#” below r script to leave yourself notes</p></li>
+<li><p>write outside of the r script for headings or any other detail
+you want.</p></li>
+<li><p>click the Knit button on the top left hand side of the R markdown
+window and it will produce a document and save it to your working
+directory.</p></li>
+</ul>
+<p>Additional resources for independent discovery of concepts and code:
+- google - stack overflow - chatgpt - <a href="https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf">R
 Markdown Cheat Sheet</a></p>
-<p><a href="https://gauss.inf.um.es/tabular/www/data-transformation.pdf">dplyr
-Cheat Sheet</a></p>
-<p><a href="https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf">dplyr
-and tidyr Cheat Sheet</a></p>
-<p><a href="https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf">lubridate
-Cheat Sheet</a></p>
 </div>
-<div id="useful-literature" class="section level3">
-<h3>1.5 Useful literature</h3>
-<div id="davidson-papers-using-rfid-to-measure-behaviour-in-wild-great-tits-and-blue-tits-at-feeders-and-nestboxes" class="section level4">
-<h4>Davidson papers using RFID to measure behaviour in wild great tits
-and blue tits at feeders and nestboxes:</h4>
-<p><a href="https://doi.org/10.1098/rsos.192107">Multiple factors affect
-discrimination learning performance, but not between-individual
-variation, in wild mixed-species flocks of birds</a></p>
-<p><a href="https://doi.org/10.1016/j.cub.2024.06.029">Episodic-like
-memory in wild free-living blue tits and great tits</a></p>
-<p><a href="https://doi.org/10.1016/j.anbehav.2022.02.007">Inhibitory
-control performance is repeatable over time and across contexts in a
-wild bird population</a></p>
+<div id="exercise-1" class="section level3">
+<h3><strong>2.5 EXERCISE</strong></h3>
+<p>Using the code you produced earlier, create a short R Markdown file
+and knit it.</p>
 </div>
-<div id="other-groups-using-rfid-to-measure-behaviour-in-alternative-ways" class="section level4">
-<h4>Other groups using RFID to measure behaviour in alternative
-ways:</h4>
-<p><a href="https://doi.org/10.1111/eth.12720">Inferring dominance
-interactions from automatically recorded temporal data</a></p>
-<p><a href="https://doi.org/10.1016/j.anbehav.2015.10.015">Individual
-variation in spatial memory performance in wild mountain chickadees from
-different elevations</a></p>
-<p><a href="https://doi.org/10.1111/jav.01740">Spatial, temporal and
-individual-based differences in nest-site visits and subsequent
-reproductive success in wild great tits</a></p>
+<div id="answers-to-exercise" class="section level3">
+<h3>Answers to EXERCISE</h3>
+<pre class="r"><code>#the files are text files so you need to use a function that calls .txt. files
+
+path2&lt;-&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F01_220209&quot;
+setwd(path2)
+# Call the RT file into your environment and call it df1 (dataframe 1)
+
+RTfile&lt;-list.files(path2, pattern = &quot;RT&quot;)
+df1&lt;-lapply(RTfile, read.delim) #this will appear as a list in your environment
+df1&lt;-as.data.frame(df1) #turn it into a dataframe
+head(df1)
+df1&lt;-cbind(df1, feeder=&#39;F01&#39;)
+           
+path3&lt;-&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F02_220209&quot;
+setwd(path3)
+# Call the RT file into your environment and call it df2 (dataframe 2)
+
+RTfile&lt;-list.files(path3, pattern = &quot;RT&quot;)
+df2&lt;-lapply(RTfile, read.delim) #this will appear as a list in your environment
+df2&lt;-as.data.frame(df2) #turn it into a dataframe
+head(df2)
+df2&lt;-cbind(df2, feeder=&#39;F02&#39;)
+
+path4&lt;-&quot;F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F03_220209&quot;
+setwd(path4)
+# Call the RT file into your environment and call it df2 (dataframe 3)
+
+RTfile&lt;-list.files(path4, pattern = &quot;RT&quot;)
+df3&lt;-lapply(RTfile, read.delim) #this will appear as a list in your environment
+df3&lt;-as.data.frame(df3) #turn it into a dataframe
+head(df3)
+df3&lt;-cbind(df3, feeder=&#39;F03&#39;)    
+
+d220209&lt;-bind_rows(df1,df2,df3) </code></pre>
 </div>
-<div id="general-autonomous-data-collection-methodology-and-approaches" class="section level4">
-<h4>General autonomous data collection methodology and approaches:</h4>
-<p><a href="https://doi.org/10.1111/2041-210X.13652">Broad-scale
-applications of the Raspberry Pi: A review and guide for
-biologists</a></p>
-<p><a href="https://doi.org/10.1111/2041-210X.13931">The OpenFeeder: A
-flexible automated RFID feeder to measure interspecies and intraspecies
-differences in cognitive and behavioural performance in wild
-birds</a></p>
-<p><a href="https://doi.org/10.3389/fevo.2019.00257">An Arduino-Based
-RFID Platform for Animal Research</a></p>
-<p><a href="https://doi.org/10.1049/smc2.12016">Shazam for bats:
-Internet of Things for continuous real-time biodiversity
-monitoring</a></p>
-<p><a href="https://doi.org/10.1049/smc2.12016">Shazam for bats:
-Internet of Things for continuous real-time biodiversity
-monitoring</a></p>
 </div>
+<div id="end-of-2.-rfid-tutorial-introduction-to-rfid-use-and-data-handling" class="section level1">
+<h1>END OF 2. RFID Tutorial: Introduction to RFID use and data
+handling</h1>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 4.2.3 (2023-03-15 ucrt)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 10 x64 (build 19045)
+## 
+## Matrix products: default
+## 
+## locale:
+## [1] LC_COLLATE=English_United Kingdom.utf8 
+## [2] LC_CTYPE=English_United Kingdom.utf8   
+## [3] LC_MONETARY=English_United Kingdom.utf8
+## [4] LC_NUMERIC=C                           
+## [5] LC_TIME=English_United Kingdom.utf8    
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] knitr_1.43      magrittr_2.0.3  stringi_1.7.12  rmarkdown_2.22 
+##  [5] lubridate_1.9.2 forcats_1.0.0   stringr_1.5.0   dplyr_1.1.2    
+##  [9] purrr_1.0.1     readr_2.1.4     tidyr_1.3.0     tibble_3.2.1   
+## [13] ggplot2_3.4.2   tidyverse_2.0.0
+## 
+## loaded via a namespace (and not attached):
+##  [1] bslib_0.5.0      compiler_4.2.3   pillar_1.9.0     jquerylib_0.1.4 
+##  [5] tools_4.2.3      digest_0.6.31    timechange_0.2.0 jsonlite_1.8.4  
+##  [9] evaluate_0.21    lifecycle_1.0.3  gtable_0.3.3     pkgconfig_2.0.3 
+## [13] rlang_1.1.0      cli_3.6.1        rstudioapi_0.14  yaml_2.3.7      
+## [17] xfun_0.39        fastmap_1.1.1    withr_2.5.0      hms_1.1.3       
+## [21] generics_0.1.3   sass_0.4.6       vctrs_0.6.1      grid_4.2.3      
+## [25] tidyselect_1.2.0 glue_1.6.2       R6_2.5.1         fansi_1.0.4     
+## [29] tzdb_0.4.0       scales_1.2.1     htmltools_0.5.5  colorspace_2.1-0
+## [33] utf8_1.2.3       munsell_0.5.0    cachem_1.0.8</code></pre>
 </div>
 
 

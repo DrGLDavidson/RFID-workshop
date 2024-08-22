@@ -11,7 +11,7 @@ output: html_document
 ### Check R packages installed
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
 #load the following packages
-library(tidyverse)
+library(tidyverse) #some of the below packages are included in tidyverse
 library(rmarkdown)
 library(dplyr)
 library(tidyr)
@@ -70,9 +70,12 @@ Another option is to create an R function. This means you specify arguments (e.g
 ## 2.2 Importing RFID data and generating master database
 
 ### 2.2.1 working directory and files
-# Imagine you have collected data from three RFID feeders deployed in the field. When you save the data from the SD card, you save it according to the date you collected it (YYMMDD), and the feeder ID (in this case F01, F02, F03)
+Imagine you have collected data from three RFID feeders deployed in the field. When you save the data from the SD card, you save it according to the date you collected it (YYMMDD), and the feeder ID (in this case F01, F02, F03)
 
-```{r}
+```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE} 
+require("knitr")
+opts_knit$set(root.dir = "F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
+
 #set working directory so R knows where to find and save data
 setwd("F:/RWorkspace/GitHub/RFID-workshop/data/feederData")
 
@@ -95,7 +98,7 @@ list.files(path2, pattern=NULL, all.files=FALSE,
 
 ```
 
-# what you are seeing are a number of files that start with a alphanumberic code, followed by two letters. "C1935" refers to the feeder's hardware ID code. This can never change. The last two letters refer to the output file type. For example, FD refers to "feeder door" and has information about whether the servo door opened (o) or stayed closed (c) upon detection of a bird. For our purposes, we will focus on the RT files only. 
+what you are seeing are a number of files that start with a alphanumberic code, followed by two letters. "C1935" refers to the feeder's hardware ID code. This can never change. The last two letters refer to the output file type. For example, FD refers to "feeder door" and has information about whether the servo door opened (o) or stayed closed (c) upon detection of a bird. For our purposes, we will focus on the RT files only. 
 
 
 ### 2.2.2 Viewing files and preparing for compiling them into a single dataframe
@@ -115,10 +118,10 @@ head(df1) # see the first few rows and headers
 
 ```
 
-# what you are seeing are time stamped events every time the strain gauge perch is triggered. If there is an associated RFID tag read, it appears under the column header "TagID_hex". 
-# You can see the ID is c1935 which matches our folder name. Dur Clks Freq and Edges refer to some RFID parameters, which may be useful if there are any issues with detecting tags (there are lots of events without tags). 
-# the most important headers for downstream analyses are Date, Hmsec, ID and TagID_hex. But we will keep all headers.
-# you should notice that although we have the ID of the feeder, that does not provide us with any information about where the feeder was located in our experimental design which is FUNDAMENTAL to analyses. If you are to compile a dataframe that contains data from multiple different feeders, you must know which data comes from which feeder. 
+what you are seeing are time stamped events every time the strain gauge perch is triggered. If there is an associated RFID tag read, it appears under the column header "TagID_hex". 
+You can see the ID is c1935 which matches our folder name. Dur Clks Freq and Edges refer to some RFID parameters, which may be useful if there are any issues with detecting tags (there are lots of events without tags). 
+the most important headers for downstream analyses are Date, Hmsec, ID and TagID_hex. But we will keep all headers.
+you should notice that although we have the ID of the feeder, that does not provide us with any information about where the feeder was located in our experimental design which is fundamental to analyses. If you are to compile a dataframe that contains data from multiple different feeders, you must know which data comes from which feeder. 
 
 ### 2.2.3 Adding a column to indicate which feeder your data belongs to 
 
@@ -194,7 +197,7 @@ Make sure to
 
 - save a new Master database with **THE DATE OF THE LAST SET OF FILES YYMMDD**
 
-```{r}
+```{r eval=FALSE}
 
 #if you use the same naming system as before, you will then end up with a dataframe named d220209. 
 
@@ -204,8 +207,8 @@ dfinal<-bind_rows(d220206,d220209)  #the order of the dfs as arguments will dete
 ```
 
 
-### 2.4.1 Saving your work and returning to it later
-```{r}
+### 2 .4.1 Saving your work and returning to it later
+```{r eval=FALSE, , echo=T}
 
 #by default, R will save to your current working directory. So lets change it to a higher directory than we are currently in. Otherwise it may be hard to find which subfolder to save into. You could also create a folder specifically for saving into. 
 
@@ -248,7 +251,7 @@ But for now, lets try R Markdown:
 
 Additional resources for independent discovery of concepts and code: 
 - google
-- stack exchange
+- stack overflow
 - chatgpt
 - [R Markdown Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
 
@@ -257,7 +260,7 @@ Additional resources for independent discovery of concepts and code:
 Using the code you produced earlier, create a short R Markdown file and knit it. 
 
 ### Answers to EXERCISE
-```{r}
+```{r eval=FALSE, , echo=T}
 #the files are text files so you need to use a function that calls .txt. files
 
 path2<-"F:/RWorkspace/GitHub/RFID-workshop/data/feederData/F01_220209"
