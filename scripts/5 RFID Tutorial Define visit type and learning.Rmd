@@ -1,7 +1,7 @@
 ---
 title: '5. RFID Tutorial: Define visit type and learning'
 author: "Gabrielle Davidson"
-date: "2024-08-16"
+date: "2024-08-22"
 output: html_document
 ---
 ## 5. Get set up
@@ -106,14 +106,26 @@ write.table(df5, file = "Masterdf_correctVisits.txt",sep="\t",row.names=FALSE)
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
 #filter out birds that have visited at least 20 times
 
-df20 <- df5 %>%
+class(df5$correctVisitBinary)
+df5$correctVisitBinary<-as.numeric(df5$correctVisitBinary)
+
+
+df6 <- df5 %>%
   group_by(TagID_hex) %>%
   mutate(visit_count = n()) %>%  #what variable is visit count
   filter(visit_count >= 20) %>%
   ungroup() %>%
   select(-visit_count) 
 
-#function for when criterion met first
+
+
+#function for when criterion met first. Here the value 20 represents filtering for 20 visits, so the above code isn't necessary if using this code as well. There is no harm in running both. 
+#Here, "correct" is a vector that contains binary values (1 for correct visits, 0 for false visits). Each element should correspond to a visit. The success_check function determines the first instance when a bird meets a specific learning criterion based on visits. For the function:
+#At least 20 consecutive visits are required. (This is not actually needed as we filtered data beforehand, but the filtering by 20 visits on its own is a useful piece of code if you want to apply it separately to learning function. 
+#The first visit within these 20 consecutive visits must be a correct visit (indicated by window[1] == 1) and 80% or more of these #20 visits must be correct (sum(window)/ 20 >= 0.8) for the criterion to be met.
+#19 refers to a count
+
+
 success_check <- function(correct ){
   n <- length(correct)  #what variable is correct
  if (n < 20){
@@ -134,8 +146,40 @@ success_check <- function(correct ){
 #apply criterion check function
 results20 <- df5 %>% 
   group_by(TagID_hex) %>% 
-  summarise(criterion = success_check(correctVisit))  ##what is success_check?
-head(results20) #function works well 
+  summarise(criterion = success_check(correctVisitBinary)) #here "correctVisitBinary" is the column with 0 or 1 values and should be numerical
+view(results20) 
+
+#You will see there are many NAs. This is because most birds have yet to learn under our criteria.
+
+#To demonstrate, you could alter the values in the function so it is less stringent (and simply because our dataset is small, birds have yet to learn). The participation will be 5 visits, and 80% correct in 5 visits 
+
+success_check2 <- function(correct ){
+  n <- length(correct)  #what variable is correct
+ if (n < 5){
+   return(NA)
+ }
+  for (i in 1:(n-4)) {
+    window <- correct[i: (i+ 4)]
+    if(window[1] == 1 && sum(window)/ 5 >= 0.8){
+      return(i+4)
+    }
+    
+  }
+  return(NA)
+}
+
+#apply criterion check function
+results5 <- df5 %>% 
+  group_by(TagID_hex) %>% 
+  summarise(criterion = success_check2(correctVisitBinary))  
+view(results5) 
+
+#there are still a lot of NAs, but you can see there are more birds that learned, and the number of visits it took to learn. 
+
+#if you wish to save this data, you could do that now. 
+
+path_out = 'F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles'
+write.csv(results5, file.path(path_out,'birdsReachingCriterion_5visits.csv'))
 
 ```
 
