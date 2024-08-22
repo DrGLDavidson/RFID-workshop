@@ -24,7 +24,7 @@ library(magrittr) #may not need this
 ### Download resources necessary for the workshop
 Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
 
-## 4.1 import your dataset to your environment from your working directory. 
+## 4.1 Import your dataset to your environment from your working directory. 
 
 ```{r}
 
@@ -44,7 +44,7 @@ names(df)
 
 ```
 
-### 4.2 total number of visits per feeder, per day
+## 4.2 Total number of visits per feeder, per day
 ```{r}
 #a new dataframe that counts the total number of visits per feeder per individual, per date. 
 individualVisits<-df%>%
@@ -94,7 +94,7 @@ ProportionVisits<-individualVisits%>%
 
 ```
 
-### 4.3 proportion of visits per feeder, per day
+## 4.3 Proportion of visits per feeder, per day
 ```{r}
 
 #a new dataframe that counts the proportion an individual visits a feeder relative to the other feeders, per day. 
@@ -124,77 +124,41 @@ ggplot(df,aes(x=factor(TagID_hex),fill=factor(feeder)))+
 ```
 
 ### **4.4 EXERCISE** Visits
-## 4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
+4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
 (hint: group_by)
 
-## 4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
+4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
 (hint: section 3.5)
 
-## 4.4.3 rename the column of the number of visits to "totalVisits".
+4.4.3 rename the column of the number of visits to "totalVisits".
 
-## 4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
+4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
 
-## 4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
+4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
 
-### 4.5 EXERCISE - Time intervals 
+### **4.5 EXERCISE** - Time intervals 
 
 Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
 
-### THIS NEEDS EDITING 
+4.5.1 clear your global environment
 
-- clear your global environment
+4.5.2 reload your database "filteredVisitsFeeders.txt"
 
-- reload your database "filteredVisitsFeeders.txt"
+4.5.3 change the datetime column to be a POSIXct class 
 
-- change the datetime column to be a POSIXct class 
+4.5.4 create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
 
-- create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
+4.5.5 create a dataframe consisting of individuals that visited a feeder equal or less than 1 second after the previous visitor, perhaps this suggests they are more likely to displace other birds from the feeder. 
 
-- create a dataframe consisting of individuals that visited a feeder equal or less than 1 second after the previous visitor, perhaps this suggests they are more likely to displace other birds from the feeder. 
+4.5.6 create a dataframe of a list of unique individuals that have landed on a feeder within 1 second of the previous visitor
 
-- create a dataframe of a list of unique individuals that have landed on a feeder within 1 second of the previous visitor
+4.5.7 create a dataframe that counts the number of times each individual has landed on a feeder within 1 second of the previous visitor
 
-- create a dataframe that counts the number of times each individual has landed on a feeder within 1 second of the previous visitor
+### **4.6 EXERCISE** - Correct and incorrect visits
 
-
-```{r}
-#clear global environment
-rm(list = ls(all.names = TRUE))
-
-#upload file 
-
-df<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
-names(df)
-# change datetime column to be POSIXct class
-class(df$datetime)
-df$datetime <- as.POSIXct(df$datetime)
-class(df$datetime)
-
-df1<-df %>%
-  arrange(datetime)%>%
-  group_by(date, feeder) %>%
-  mutate(timeBetweenID = datetime - lag(datetime))%>%
-  arrange(datetime)%>%
-  ungroup()
-
-df1$timeBetweenID <- as.numeric(as.character(df1$timeBetweenID)) 
-class(df1$timeBetweenID)
-
-df2<-df1%>%
-  filter(timeBetweenID <=1)
-
-uniqueDisplacers<-unique(df2$RFID)
-uniqueDisplacers<-as.data.frame(uniqueDisplacers)
-
-individualDisplacements<-df2%>%
-  count(RFID, sort = TRUE) 
-
-```
-
-### 4.6 EXERCISE - Correct and incorrect visits
-
-## 4.6.1 Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
+4.6.1 Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
 (hint: filter, then cbind)
+
 # END OF 4. RFID Tutorial: Quantifying feeder visits 
 
 ```{r}

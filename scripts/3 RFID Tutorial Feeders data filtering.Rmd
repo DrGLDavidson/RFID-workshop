@@ -4,7 +4,7 @@ author: "Gabrielle Davidson - School of Biological Sciences, University of East 
 date: "2024-08-12"
 output: html_document
 ---
-## 1. Get set up
+## 3. Get set up
 
 ### Open R Studio
 
@@ -24,9 +24,11 @@ library(magrittr) #may not need this
 ### Download resources necessary for the workshop
 Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
 
-## 3.1 import your dataset to your environment from your working directory. 
+## 3.1 Import your dataset to your environment from your working directory. 
 
-```{r}
+```{r echo=T,  error=FALSE, warning=FALSE, message=FALSE} 
+require("knitr")
+opts_knit$set(root.dir = "F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles")
 
 #clear the global environment so we don't have any conflicts with the next steps 
 
@@ -34,7 +36,7 @@ rm(list = ls(all.names = TRUE))
 
 #choose the appropriate working directory
 
-setwd("F:/RWorkspace/GitHub/RFID-workshop/data")
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles")
 
 #call your most recent dataset of merged feeder data. 
 
@@ -47,13 +49,12 @@ names(df)
 ## 3.2 Data filtering
 
 ### 3.2.1 Remove misreads (i.e. erroneous TagID_hex values)
-# Ocassionally the RFID reader will incorrectly read an tag. This may be because the bird does not properly land on the perch to feed, and so these 'misreads' can be removed. 
-# To remove misreads, we need to match the feeder data against known tagged bird IDs (i.e. Passive Integrative Transponder (PIT) tag numbers, aka TagID_hex). I have provided a file with a list of PIT tags and corresponding metadata (species, age, sex etc.). Note this data is NOT from the UEA population. 
+Ocassionally the RFID reader will incorrectly read an tag. This may be because the bird does not properly land on the perch to feed, and so these 'misreads' can be removed. 
+To remove misreads, we need to match the feeder data against known tagged bird IDs (i.e. Passive Integrative Transponder (PIT) tag numbers, aka TagID_hex). I have provided a file with a list of PIT tags and corresponding metadata (species, age, sex etc.). Note this data is NOT from the UEA population. 
 
 ```{r}
-
 #upload a list of your known PIT tag IDs. Notice that the file is a .csv, rather than .txt
-PIT<-read.csv(file="PITList_tutorial.csv", header=TRUE)
+PIT<-read.csv(file="F:/RWorkspace/GitHub/RFID-workshop/data/PITList_tutorial.csv", header=TRUE)
 names(PIT)
 
 #note that the ring type (BTO and PIT) refer to whether it was a new bird (first time given the ring), or retrap (already had the ring). It is possible that a bird may already have a BTO ring (R) but not a PIT tag (N). However, in these cases, the code was meant to be A for added (but you can ignore this detail for now). 
@@ -70,47 +71,56 @@ head(df)
 #rename the header in PIT to match that of df
 names(PIT)[names(PIT) == "pitID"] <- "TagID_hex"  
 names(PIT)
+```
 
-#if we view df, we will also see there are a lot of rows with no TagID_hex. This is because non-tagged birds often land on the feeder and it shows up as a time stamp with no corresponding TagID_hex. Lets remove blank rows, otherwise there will be many rows that can't merge with PIT. 
+If we view df, we will also see there are a lot of rows with no TagID_hex. This is because non-tagged birds often land on the feeder and it shows up as a time stamp with no corresponding TagID_hex. Lets remove blank rows, otherwise there will be many rows that can't merge with PIT. 
 
+```{r}
 df <- with(df, df[!(TagID_hex == "" | is.na(TagID_hex)), ])
+```
+Now you can merge dataframes by their shared TagID_hex value. In addition, if there are any missing TagID_hex values from PIT, it will be indicated with "NA". In other words, if a bird that is not on our database was detected at the feeder, it will show up as NA. This code also returns any values from our PIT dataframe that was not on df. In otherwords, an NA is given if the bird on our database was never detected at the feeders. 
 
-#Now you can merge dataframes by their shared TagID_hex value. In addition, if there are any missing TagID_hex values from PIT, it will be indicated with "NA". In other words, if a bird that is not on our database was detected at the feeder, it will show up as NA. This code also returns any values from our PIT dataframe that was not on df. In otherwords, an NA is given if the bird on our database was never detected at the feeders. 
-
+```{r}
 df1 <- merge(df, PIT, by = "TagID_hex", all = TRUE)
-df1[is.na(df1)] <- "NA"  
-
+df1[is.na(df1)] <- "NA"
+```
 #We are only interested in the TagID_hex that was detected at the feeder, but not on our database. We will filter these into a new dataframe called missing. We extract these as values that did not have a BTO 
-
+```{r}
 missing<-df1%>%
   filter(btoID=="NA")
+```
+why do we do this with the header btoRing? Because TagID_hex is now merged across dataframes, so this is no longer informative for missing data. Any of the headers from the PIT dataframe would work, but we are using btoID. 
 
-# why do we do this with the header btoRing? Because TagID_hex is now merged across dataframes, so this is no longer informative for missing data. Any of the headers from the PIT dataframe would work, but we are using btoID. 
-
+```{r}
 #there are 54 observations where there is no corresponding PIT tag. 
 #create a list of TagID_hex reads that did not have a match: 
 
 uniqueMisreads <- unique(missing$TagID_hex)
 uniqueMisreads
+```
 
-#there are two tags. "0300024FEF" is our reference tag. It is the tag that the experimenter uses to test the feeders and mark when experiments start and end. "01103F3B1B" looks like a genuine tag. But is it a misread or missing data from our PIT tag data? To answer this, double check the master ringing database to see if that tag is there. If it is not there, assume it is a misread. If it is there, add it to the PIT database and re-run your code.
+there are two tags. "0300024FEF" is our reference tag. It is the tag that the experimenter uses to test the feeders and mark when experiments start and end. "01103F3B1B" looks like a genuine tag. But is it a misread or missing data from our PIT tag data? To answer this, double check the master ringing database to see if that tag is there. If it is not there, assume it is a misread. If it is there, add it to the PIT database and re-run your code.
 
+```{r}
 #save your misreads for your records
 
-setwd(path)  # insert the correct working directory (path)
+path_out = 'F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles'
 
-write.csv(uniqueMisreads, file="uniqueMisreadsFeeders.csv")
+write.csv(uniqueMisreads, file.path(path_out, 'uniqueMisreadsFeeders.csv'))
 
 #assuming we have resolved this, merge df and PIT again, using a different code that wont keep all NAs from the PIT file, but will remove NAs from the btoRing column, using the argument all = FALSE
 
 df1 <- merge(df, PIT, by = "TagID_hex", all = FALSE)
 
 #this returns a dataframe that is 1214 observations. 
-1268-1214
+1268-1214  #maths to check number of observations makes sense
+```
+The above subtraction equals 54, which is the same number of observations from our dataframe "missing". This makes sense. 
 
-# this equals 54, which is the same number of observations from our dataframe "missing". This makes sense. 
+Another way you can merge dataframes is using the package dplyr and the following code: 
 
-# Another way you can merge dataframes is using the package dplyr and the following code: 
+```{r}
+
 
 df2<-left_join(df, PIT ,by ="TagID_hex")
 
@@ -128,16 +138,17 @@ rm(list = ls(all.names = TRUE))
 
 ### 3.2.1 Filter repetitive RFID reads within a single visit
 
-## A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.  
+A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.  
 
 ```{r}
 #As we will be working with time, we need to check how our dataframe is named and organised
 df2<-read.delim("Masterdf_noMisreads.txt", header=TRUE)
 
 head(df2)
+```
 
-#there are two separate date columns and a time column. This is because we merged the feeder data with ringing data. 
-
+There are two separate date columns and a time column. This is because we merged the feeder data with ringing data. 
+```{r}
 #rename ringing columns
 
 names(df2)[names(df2) == "date"] <- "dateRinged" 
@@ -148,8 +159,10 @@ names(df2)[names(df2) == "time"] <- "timeRinged"
 names(df2)[names(df2) == "Date"] <- "dateTime" 
 
 names(df2)
+```
 
-#create a new column with the date only
+create a new column with the date only
+```{r}
 
 df2$date<-date(df2$dateTime)
 
@@ -168,10 +181,12 @@ class(df3$dateTime)
 
 ```
 ```{r, warning=FALSE}
-#create a column that calculates the time difference with previous row of a dataframe grouped by date, feeder and RFID
+```
+create a column that calculates the time difference with previous row of a dataframe grouped by date, feeder and RFID
 
-#consider why you are grouping by these columns. The time interval will only be calculated PER date PER feeder and PER tag. If you wanted to know the time interval between days as well, then you would not group by date. Or if you wanted an interval regardless or feeder, you would remove feeder from your grouping argument. 
+consider why you are grouping by these columns. The time interval will only be calculated PER date PER feeder and PER tag. If you wanted to know the time interval between days as well, then you would not group by date. Or if you wanted an interval regardless or feeder, you would remove feeder from your grouping argument. 
 
+```{r, warning=FALSE}
 df4<-df3 %>%
   arrange(dateTime)%>%
   group_by(date, feeder, TagID_hex) %>% 
@@ -203,9 +218,12 @@ df4$timeSincePreviousVisit <- gsub(' secs', '', df4$timeSincePreviousVisit)
 
 df4$timeSincePreviousVisit <- as.numeric(as.character(df4$timeSincePreviousVisit)) 
 class(df4$timeSincePreviousVisit)
+```
 
-#create a dataframe of successive visits that are less than 20 seconds so we can graph how frequently birds are read at the feeder
-#use the "select" argument to extract only the column named timesSincePreviousVisit
+Create a dataframe of successive visits that are less than 20 seconds so we can graph how frequently birds are read at the feeder
+use the "select" argument to extract only the column named timesSincePreviousVisit
+```{r, warning=FALSE}
+
 df5<-df4%>%
   filter(timeSincePreviousVisit <=20)%>%
   select(timeSincePreviousVisit)
@@ -247,14 +265,13 @@ rm(list = ls(all.names = TRUE))
 
 ```
 
-### 3.4 Checking for RFID malfunction. In otherwords, periods of missing data.
+## 3.3 Check for RFID malfunction. In otherwords, periods of missing data.
+
+we have a dataframe with time since previous visit grouped by individual and by date. We would expect big time gaps across all individuals if a feeder was down. 
 
 ```{r}
-
+#call the dataframe from your working directory
 df1<-read.delim("Masterdf_noRepeats.txt", header=TRUE)
-
-#Check for periods of missing data
-#we have a dataframe with time since previous visit grouped by individual and by date. We would expect big time gaps across all individuals if a feeder was down. 
 
 #make dateTime a PosiX class object
 df1<-df1%>%
@@ -264,25 +281,32 @@ class(df1$dateTime)
 
 #plot a histogram of visit frequency over hours. I think days of week is just assigned to start on friday. 
 hist(df1$dateTime, breaks = "hours", plot = TRUE, freq = TRUE, format)
+```
 
-#We see there are periods of inactivity but that is regular and likely corresponds to nightime hours. 
+We see there are periods of inactivity but that is regular and likely corresponds to nightime hours. 
 
-#however, this plot does not indicate whether a given feeder was inactive, as it lumps all three feeders together. 
-
+However, this plot does not indicate whether a given feeder was inactive, as it lumps all three feeders together. 
+```{r}
 #create new dataframes filtered by feeder. 
 
 F01<-df1%>%
   filter(feeder=='F01')
 
 #plot a histogram of visit frequency over hours for feeder F01
-hist(F01$dateTime, breaks = "hours", plot = TRUE, freq = TRUE, format, ylim=c(1, 40) ) #ylim is set because I already visualised all the plots and chose to standardise the y axis so they are comparable. You will have to edit this for your own data. 
+hist(F01$dateTime, breaks = "hours", plot = TRUE, freq = TRUE, format, ylim=c(1, 40) ) #ylim is set because I already visualised all the plots and chose to standardise the y axis so they are comparable. You will have to edit this for your own data.
+```
 
+
+```{r}
 F02<-df1%>%
   filter(feeder=='F02')
 
 #plot a histogram of visit frequency over hours for feeder F02
 hist(F02$dateTime, breaks = "hours", plot = TRUE, freq = TRUE, format, ylim=c(1, 40))
+```
 
+
+```{r}
 F03<-df1%>%
   filter(feeder=='F03')
 
@@ -294,8 +318,8 @@ These three feeders have very different distributions of visits, and so this is 
 
 You will need to consider your experimental design and what is expected. In fact this data is from feeders that contained different food types and one feeder was only available for a short time period compared to the others. 
 
-### 3.5 Removing periods of missing data.
-## If one of the feeders malfunctioned for a day and the entire experiment depends on all feeders working in tandem, this may be good reason to remove data for this day, but see below. 
+## 3.4 Removing periods of missing data.
+If one of the feeders malfunctioned for a day and the entire experiment depends on all feeders working in tandem, this may be good reason to remove data for this day, but see below. 
 ```{r}
 #first check the dates data was collected
 unique(df1$date)
