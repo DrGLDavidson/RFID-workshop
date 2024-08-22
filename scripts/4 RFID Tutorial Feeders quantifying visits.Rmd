@@ -1,6 +1,6 @@
 ---
 title: "4. RFID Tutorial: Quantifying feeder visits"
-author: "Gabrielle Davidson"
+author: "Gabrielle Davidson - School of Biological Sciences, University of East Anglia"
 date: "2024-08-15"
 output: html_document
 ---
@@ -22,7 +22,7 @@ library(magrittr) #may not need this
 
 ```
 ### Download resources necessary for the workshop
-Download the resources from **[my github page](https://github.com/DrGLDavidson/TOBEUPDATED)**
+Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
 
 ## 4.1 import your dataset to your environment from your working directory. 
 

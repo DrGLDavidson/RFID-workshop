@@ -1,6 +1,6 @@
 ---
 title: '5. RFID Tutorial: Define visit type and learning'
-author: "Gabrielle Davidson"
+author: "Gabrielle Davidson - School of Biological Sciences, University of East Anglia"
 date: "2024-08-22"
 output: html_document
 ---
