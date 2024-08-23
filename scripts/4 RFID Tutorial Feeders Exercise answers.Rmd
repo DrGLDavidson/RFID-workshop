@@ -44,104 +44,108 @@ names(df)
 ```
 
 
-## 4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
+4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
 (hint: group_by)
 
-## 4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
+4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
 (hint: section 3.5)
 
-## 4.4.3 rename the column of the number of visits to "totalVisits".
+4.4.3 rename the column of the number of visits to "totalVisits".
 
-## 4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
+4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
 
-## 4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
+4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
 
 
 ```{r  }
 
-#5.1 exercise answer
-#a new dataframe that counts the total number of visits per individual. 
-individualvisits2<-df7%>%
-  count(RFID, sort = TRUE) 
+#4.4.1
+individualvisits<-df%>%
+  count(TagID_hex, sort = TRUE) 
+#4.4.2
+individualvisits2<-individualvisits%>%
+  filter(n >5)%>%
+  select(TagID_hex,n)
 
-individualvisits3<-individualvisits2%>%
-  filter(n >50)%>%
-  select(RFID,n)
+#4.4.3
+names(individualvisits2)[names(individualvisits2) == "n"] <- "totalVisits"  
 
-#change the column
-names(individualvisits3)[names(individualvisits3) == "n"] <- "totalVisits"  
+#4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
+ggplot(individualvisits2, aes(x=totalVisits)) +geom_histogram(binwidth = 20) 
 
-ggplot(individualvisits3, aes(x=totalVisits)) +geom_histogram(binwidth = 20) 
-
-participants <- unique(individualvisits3$RFID)
+#4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
+participants <- unique(individualvisits2$TagID_hex)
 
 participants<-as.data.frame(participants)
 #write.csv(participants, file="FeederExperimentParticipants.csv"))
 
 ```
 
-### 5.2 how many RFID devices an individual visits
+Extra code, not in the exercise, but perhaps useful: how many RFID devices an individual visits
 ```{r}
 # check how many feeders each individual visited
-IDFeeder<-df7%>%
-  count(feeder, RFID, sort = TRUE) 
+IDFeeder<-df%>%
+  count(feeder, TagID_hex, sort = TRUE) 
 IDFeeder<-IDFeeder%>%
-  count(RFID, sort = TRUE) 
+  count(TagID_hex, sort = TRUE) 
 summary(IDFeeder$n)
-boxplot(IDFeeder$n)
 
-##this may also be particularly useful for a nestbox population to see how many other nestboxes individuals visit
 ```
 ### 4.5 EXERCISE - Time intervals between visits among individuals
 
 Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
 
-- clear your global environment
+4.5.1 clear your global environment
 
-- reload your database "filteredVisitsFeeders.txt"
+4.5.2 reload your database "filteredVisitsFeeders.txt"
 
-- change the datetime column to be a POSIXct class 
+4.5.3 change the datetime column to be a POSIXct class 
 
-- create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
+4.5.4 create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
 
-- create a dataframe consisting of individuals that visited a feeder equal or less than 1 second after the previous visitor, perhaps this suggests they are more likely to displace other birds from the feeder. 
+4.5.5 create a dataframe consisting of individuals that visited a feeder equal or less than 2 second after the previous visitor.
 
-- create a dataframe of a list of unique individuals that have landed on a feeder within 1 second of the previous visitor
-
-- create a dataframe that counts the number of times each individual has landed on a feeder within 1 second of the previous visitor
+4.5.6 create a dataframe of a list of unique individuals that have landed on a feeder within 2 second of the previous visitor
 
 
 ```{r}
-#clear global environment
+# 4.5.1
 rm(list = ls(all.names = TRUE))
 
-#upload file 
+#4.5.2
 
-df<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
-names(df)
-# change datetime column to be POSIXct class
-class(df$datetime)
-df$datetime <- as.POSIXct(df$datetime)
-class(df$datetime)
+#choose the appropriate working directory
 
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles")
+
+#call your most recent dataset 
+
+df<-read.delim("Masterdf_noRepeats.txt", header=TRUE)
+
+#4.5.3
+class(df$dateTime)
+df$dateTime <- as.POSIXct(df$dateTime)
+class(df$dateTime)
+
+#4.5.4
 df1<-df %>%
-  arrange(datetime)%>%
+  arrange(dateTime)%>%
   group_by(date, feeder) %>%
-  mutate(timeBetweenID = datetime - lag(datetime))%>%
-  arrange(datetime)%>%
+  mutate(timeBetweenID = dateTime - lag(dateTime))%>%
+  arrange(dateTime)%>%
   ungroup()
 
+#4.5.5
 df1$timeBetweenID <- as.numeric(as.character(df1$timeBetweenID)) 
 class(df1$timeBetweenID)
 
 df2<-df1%>%
-  filter(timeBetweenID <=1)
+  filter(timeBetweenID <=2)
 
-uniqueDisplacers<-unique(df2$RFID)
-uniqueDisplacers<-as.data.frame(uniqueDisplacers)
+#4.5.6
+twosec<-unique(df2$TagID_hex)
+uniqueDisplacers<-as.data.frame(twosec)
 
-individualDisplacements<-df2%>%
-  count(RFID, sort = TRUE) 
 
 ```
 
@@ -150,21 +154,19 @@ individualDisplacements<-df2%>%
 Imagine feeder01 is rewarded and feeder02 and feeder03 are not rewarded. How would you include a column called "correctChoice" where visits to feeder01 contain the character "Y" and visits to the incorrect feeders contain the character "N"
 ```{r}
 
-df7<-read.table(file="filteredVisitsFeeders.txt", sep="\t", header=TRUE)
-
-F01Y<-df7%>%
-  filter(feeder=='feeder01')
+F01Y<-df%>%
+  filter(feeder=='F01')
 F01Y<-cbind(F01Y, correctChoice='Y')
 
-F02N<-df7%>%
-  filter(feeder=='feeder02')
+F02N<-df%>%
+  filter(feeder=='F02')
 F02N<-cbind(F02N, correctChoice='N')
 
-F03N<-df7%>%
-  filter(feeder=='feeder03')
+F03N<-df%>%
+  filter(feeder=='F03')
 F03N<-cbind(F03N, correctChoice='N')
 
-df7<-bind_rows(F01Y, F02N, F03N)
+df3<-bind_rows(F01Y, F02N, F03N)
 
 #Note that there are other methods, but this method uses approaches we learned in today's workshop. As you enhance your R coding skills you'll inevitably refine your code. 
 
