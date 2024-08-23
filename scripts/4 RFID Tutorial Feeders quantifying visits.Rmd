@@ -148,11 +148,9 @@ Previously we created a column that indicated how many seconds had passed since 
 
 4.5.4 create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
 
-4.5.5 create a dataframe consisting of individuals that visited a feeder equal or less than 1 second after the previous visitor, perhaps this suggests they are more likely to displace other birds from the feeder. 
+4.5.5 create a dataframe consisting of individuals that visited a feeder equal or less than 2 second after the previous visitor.
 
-4.5.6 create a dataframe of a list of unique individuals that have landed on a feeder within 1 second of the previous visitor
-
-4.5.7 create a dataframe that counts the number of times each individual has landed on a feeder within 1 second of the previous visitor
+4.5.6 create a dataframe of a list of unique individuals that have landed on a feeder within 2 second of the previous visitor
 
 ### **4.6 EXERCISE** - Correct and incorrect visits
 
