@@ -7,7 +7,7 @@ This repository contains the online tutorial for working with RFID data from com
 
 1. Create and name a new folder locally on your computer from which you will work. This tutorial assumes you are working locally, not from a cloud. 
 2. Download the data folder in this repository to your local folder.
-3. Create a new R script for your own work and follow the tutorial (you may need to first follow Tutorial 1 "getting started" to do this, depending on previous experience with R).
+3. Create a new R script for your own work and follow the tutorial (you may need to first follow Tutorial 1 "requirements and resources" to do this, depending on previous experience with R).
 
 ## Alternate viewing options: 
 Copies of the tutorials have been saved in pdf and html format as separate files for each tutorial, should you wish to download them separatley and view them individually. These are found in the Markdown PDFs and Markdown HTML folders. Note that pdf files can be opened and viewed directly on github and html files need to be downloaded and opened in a browser (the latter format is better). 
