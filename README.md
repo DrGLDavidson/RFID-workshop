@@ -12,7 +12,7 @@ This repository contains the online tutorial for working with RFID data from com
 ## Alternate viewing options: 
 Copies of the tutorials have been saved in pdf and html format as separate files for each tutorial, should you wish to download them separatley and view them individually. These are found in the Markdown PDFs and Markdown HTML folders. Note that pdf files can be opened and viewed directly on github and html files need to be downloaded and opened in a browser (the latter format is better). 
 
-The R markdown files with the raw R scripts and example data are in the script folder
+The R markdown files with the raw R scripts are in the script folder
 
 Code suggestions/edits, and new workflows are welcome. Please feel free to collaborate.
 
