@@ -1,7 +1,7 @@
 ---
 title: "**Tutorial for RFID Data Handling in R**"
 author: "Gabrielle Davidson - School of Biological Sciences, University of East Anglia"
-date: "2025-03-13"
+date: "2025-03-17"
 output: html_document
 ---
 # Tutorial 1: Requirements and Resources
@@ -96,8 +96,9 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 [Shazam for bats: Internet of Things for continuous real-time biodiversity monitoring](https://doi.org/10.1049/smc2.12016)
 
-## END OF 2. RFID Tutorial: Introduction to RFID Use and Data Handling 
+### END OF 1. RFID Tutorial: Introduction to RFID Use and Data Handling 
 
+---
 
 # Tutorial 2: Introduction to RFID Use and Data Handling
 
@@ -394,8 +395,9 @@ d220209<-bind_rows(df1,df2,df3)
 
 ```
 
-## END OF 2. RFID Tutorial: Introduction to RFID Use and Data Handling 
+### END OF 2. RFID Tutorial: Introduction to RFID Use and Data Handling 
 
+---
 
 # Tutorial 3: Introduction to RFID Data Filtering
 
@@ -752,8 +754,9 @@ df4<-df1%>%
 
 ```
 
-## END OF 3. RFID Tutorial: Introduction to RFID Data Filtering
+### END OF 3. RFID Tutorial: Introduction to RFID Data Filtering
 
+---
 
 # Tutorial 4: Quantifying Feeder Visits
 
@@ -910,8 +913,9 @@ Previously we created a column that indicated how many seconds had passed since 
 4.6.1 Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
 (hint: filter, then cbind)
 
-## END OF 4. RFID Tutorial: Quantifying feeder visits 
+### END OF 4. RFID Tutorial: Quantifying feeder visits 
 
+---
 
 # Tutorial 4b: Exercise answers 
 
@@ -1083,8 +1087,9 @@ df3<-bind_rows(F01Y, F02N, F03N)
 
 ```
 
-## END OF 4. RFID Tutorial: Exercise answers
+### END OF 4. RFID Tutorial: Exercise answers
 
+---
 
 # Tutorial 5: Define visit type and learning
 
@@ -1286,7 +1291,7 @@ write.csv(results5, file.path(path_out,'birdsReachingCriterion_5visits.csv'))
 
 ```
 
-## END OF 5. RFID Tutorial: Define visit type and learning
+### END OF 5. RFID Tutorial: Define visit type and learning
 
 ```{r}
 sessionInfo()
