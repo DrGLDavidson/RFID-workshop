@@ -1,9 +1,10 @@
 ---
-title: "1. RFID Tutorial: requirements and resources"
+title: "**Tutorial for RFID Data Handling in R**"
 author: "Gabrielle Davidson - School of Biological Sciences, University of East Anglia"
 date: "2025-03-13"
 output: html_document
 ---
+# Tutorial 1: Requirements and Resources
 
 #### Welcome to The RFID Tutorials - a set of R scripts with example data to get you started with performing ecological research with wild birds using autonomous data collection methods. Here you will learn the basics of manipulating and preparing data collected from RFID computerised feeders that will later be used for statistical testing (not covered here). You will use R programming to manipulate so-called streams of data into numbers that represent each individual birds' behaviour. Some prior knowledge of R's basic functions and uses is a pre-requisite, particularly if you are to flexibly apply these tutorials to your unique datasets. 
 
@@ -94,6 +95,11 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 [Shazam for bats: Internet of Things for continuous real-time biodiversity monitoring](https://doi.org/10.1049/smc2.12016)
 
 [Shazam for bats: Internet of Things for continuous real-time biodiversity monitoring](https://doi.org/10.1049/smc2.12016)
+
+## END OF 2. RFID Tutorial: Introduction to RFID Use and Data Handling 
+
+
+# Tutorial 2: Introduction to RFID Use and Data Handling
 
 ## 1. Get set up
 
@@ -389,7 +395,9 @@ d220209<-bind_rows(df1,df2,df3)
 ```
 
 
-# END OF 2. RFID Tutorial: Introduction to RFID use and data handling 
+## END OF 2. RFID Tutorial: Introduction to RFID Use and Data Handling 
+
+# 3. RFID Tutorial: Introduction to RFID Data Filtering
 
 ## 3. Get set up
 
@@ -745,7 +753,9 @@ df4<-df1%>%
 ```
 
 
-# END OF 3. RFID Tutorial: Introduction to RFID data filtering
+## END OF 3. RFID Tutorial: Introduction to RFID Data Filtering
+
+# 4. RFID Tutorial: Quantifying Feeder Visits
 
 ## 4. Get set up
 
@@ -900,7 +910,9 @@ Previously we created a column that indicated how many seconds had passed since 
 4.6.1 Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
 (hint: filter, then cbind)
 
-# END OF 4. RFID Tutorial: Quantifying feeder visits 
+## END OF 4. RFID Tutorial: Quantifying feeder visits 
+
+# 4. RFID Tutorial: Exercise answers 
 
 ## 4. Get set up
 
@@ -1070,7 +1082,9 @@ df3<-bind_rows(F01Y, F02N, F03N)
 
 ```
 
-# END OF 4. RFID Tutorial: Exercise answers
+## END OF 4. RFID Tutorial: Exercise answers
+
+# 5. RFID Tutorial: Define visit type and learning
 
 ## 5. Get set up
 
