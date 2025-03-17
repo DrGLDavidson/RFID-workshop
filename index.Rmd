@@ -394,10 +394,10 @@ d220209<-bind_rows(df1,df2,df3)
 
 ```
 
-
 ## END OF 2. RFID Tutorial: Introduction to RFID Use and Data Handling 
 
-# 3. RFID Tutorial: Introduction to RFID Data Filtering
+
+# Tutorial 3: Introduction to RFID Data Filtering
 
 ## 3. Get set up
 
@@ -752,10 +752,10 @@ df4<-df1%>%
 
 ```
 
-
 ## END OF 3. RFID Tutorial: Introduction to RFID Data Filtering
 
-# 4. RFID Tutorial: Quantifying Feeder Visits
+
+# Tutorial 4: Quantifying Feeder Visits
 
 ## 4. Get set up
 
@@ -912,7 +912,8 @@ Previously we created a column that indicated how many seconds had passed since 
 
 ## END OF 4. RFID Tutorial: Quantifying feeder visits 
 
-# 4. RFID Tutorial: Exercise answers 
+
+# Tutorial 4b: Exercise answers 
 
 ## 4. Get set up
 
@@ -1084,7 +1085,8 @@ df3<-bind_rows(F01Y, F02N, F03N)
 
 ## END OF 4. RFID Tutorial: Exercise answers
 
-# 5. RFID Tutorial: Define visit type and learning
+
+# Tutorial 5: Define visit type and learning
 
 ## 5. Get set up
 
@@ -1284,8 +1286,7 @@ write.csv(results5, file.path(path_out,'birdsReachingCriterion_5visits.csv'))
 
 ```
 
-
-# END OF 5. RFID Tutorial: Define visit type and learning
+## END OF 5. RFID Tutorial: Define visit type and learning
 
 ```{r}
 sessionInfo()
