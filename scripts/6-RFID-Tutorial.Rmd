@@ -22,7 +22,7 @@ library(patchwork) # to put plots together
 
 In the previous chapters, we worked with a dataset spanning five days of an experiment. However, learning experiments in the field often run for longer, and individuals typically progress through a series of distinct learning phases.
 
-For this chapter, we’ll use a new dataset called *italics* criterion_multiplePhases.txt*italics*, available in the GitHub repository. This dataset includes individuals from multiple learning phases — not just initial learning, but also one or more reversal learning phases.
+For this chapter, we’ll use a new dataset called *criterion_multiplePhases.txt*, available in the GitHub repository. This dataset includes individuals from multiple learning phases — not just initial learning, but also one or more reversal learning phases.
 
 Download the new dataset from **[here](https://github.com/DrGLDavidson/RFID-workshop)**.
 
