@@ -1,0 +1,203 @@
+---
+title: "6. RFID Tutorial: Correcting learning phase assignments with multiple reversals"
+author: "Vildan Acar"
+date: "2025-04-03"
+output: html_document
+---
+## 6. Get set up
+
+### Open R Studio
+
+### Check R packages installed
+```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
+#load the following packages
+library(rmarkdown)
+library(tidyverse)
+```
+
+### Download resources necessary for the workshop
+
+In the previous chapters, we worked with a dataset spanning five days of an experiment. However, learning experiments in the field often run for longer, and individuals typically progress through a series of distinct learning phases.
+
+For this chapter, we’ll use a new dataset called *criterion_multiplePhases.txt*, available in the GitHub repository. This dataset includes individuals from multiple learning phases — not just initial learning, but also one or more reversal learning phases.
+
+Download the new dataset from **[here](https://github.com/DrGLDavidson/RFID-workshop)**.
+
+## 6.1 Import your dataset to your environment from your working directory.
+
+```{r}
+#clear the global environment so we don't have any conflicts with the next steps 
+
+rm(list = ls(all.names = TRUE))
+
+#choose the appropriate working directory
+
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/")
+
+#call your most recent dataset 
+
+df<-read.delim("criterion_multiplePhases.txt", header=TRUE)
+head(df)
+names(df)
+```
+
+One of the columns in this dataset is learningPhase. This column contains labels for each individual’s phase in the experiment, including one initial learning phase **(IL)**, followed by two reversal learning phases **(RL1 and RL2)**.
+
+During an experiment, as data is collected over time, multiple phases of the experiment may occur. Therefore, when conducting your own experiments, you will need to add a column to your dataset that identifies which learning phase the data corresponds to. This step is important for accurately labeling and interpreting your data (see Tutorial 2 for more details on data upload and organisation).
+
+If you are following this tutorial with your own real data, keep in mind that the *criterion for each learning phase is calculated separately.* Your dataset should look similar to the ***df*** object after calculating *criterion* as explained in Chapter 5 seperately for each learning phase and merging it with other bird itentifications such as species, sex i.e.
+
+### Understanding learning phases in cognitive experiments
+
+In associative learning experiments, individuals are often tested across multiple phases, each designed to probe different aspects of cognition.
+
+The first phase is *initial learning (IL)*. Here, individuals are introduced to a stimulus-reward contingency. For example, in an experiment setup with multiple feeders, a single feeder provides a food reward to an individual. Over several days, individuals learn/or fail to learn this association through repeated visits.
+
+Once this association is established, or designated time for that phase passes, the experimental conditions change: the previously rewarded stimulus becomes unrewarded, and vice versa. This is known as *reversal learning (RL)*. Reversal learning assesses the ability to adapt when prior rules no longer apply.
+
+
+In our RFID-based field experiments, during IL, all birds are assigned randomly to a feeder associated with a reward. After around 5–10 days (depending on the experimental setup), the contingency is reversed, and birds are reassigned to different feeders. This process can be repeated to include multiple reversals (e.g., RL1, RL2), providing insights into how learning patterns change over time and across contexts.
+
+
+### Why we need to correct learning phase labels
+
+In typical learning experiments conducted in controlled lab environments, all individuals can be exposed to learning phases simultaneously and under identical conditions. But in field experiments, especially those involving voluntary participation like ours, individuals do not always enter the experiment at the same time.
+
+This introduces a challenge. Our datasets typically label visits based on the planned schedule of the experiment — for example in ***df*** :
+
+* IL: 13–17 January
+
+* RL1: 17–22 January
+
+* RL2: 22–27 January
+
+However, some birds may not have participated during IL or RL1, and only began interacting with the feeder setup during RL2. If we rely solely on the experiment schedule to assign phase labels, we might wrongly assume that these birds are in their second reversal, when in fact they are just beginning to learn the original task.
+
+This matters because each individual's learning history influences how we interpret their behaviour. A visit pattern from a bird in its first learning phase means something different than the same pattern from a bird in its third phase.
+
+To make meaningful comparisons, we need to relabel learning phases on a per-bird basis, based on when each individual first began participating. This ensures that we accurately capture the learning trajectory of each bird, rather than imposing a structure based on the experiment timeline alone.
+
+
+## 6.2 Identifying learning set participation
+
+To begin, let's visualise the participation to each bird in each phase of the experiment. 
+
+```{r, fig.width = 9, fig.height = 5, dpi = 300}
+# change the 'learningPhase' and 'btoID' columns to factors for better visualization
+df$learningPhase <- factor(df$learningPhase, levels = c("IL", "RL1", "RL2"))
+df$btoID <- as.factor(df$btoID)
+
+#plot a geom tile
+ggplot(df, 
+       aes(x = btoID, 
+           y = learningPhase, 
+           fill = learningPhase)) +
+  geom_tile(color = "white", 
+            width = 1,
+            height = 0.9) +
+  labs(title = "Bird participation across learning phases",
+    x = "BTO ID",
+    y = "Learning phase") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 5), #x axis text aesthetics
+        axis.text.y = element_text(size = 10), #y axis text aesthetics
+        legend.position = "none")
+```
+
+As seen in the plot, while most birds participated in all three phases, some individuals missed certain learning phases. For these individuals, we need to correct their actual learning trajectories.
+
+### 6.3 EXERCISE
+
+To understand the situation better, create: 
+
+6.3.1. A bar chart visualising number of birds participated in each learning phase
+
+6.3.2. A bar chart visualising number of learning phases earch bird participated
+
+### 6.4 Exercise answers 
+
+```{r}
+#6.3.1.
+df %>%
+  group_by(learningPhase) %>%
+  summarise(n_birds = n_distinct(btoID)) %>%
+  ggplot(aes(x = learningPhase, 
+             y = n_birds)) +
+  geom_bar(stat = "identity", 
+           fill = "lightblue") +
+  labs(title = "Number of birds in each learning phase",
+    x = "Learning phase",
+    y = "Number of birds") +
+  theme_minimal()
+
+#6.3.2. 
+
+df %>%
+  group_by(btoID, species) %>%
+  summarise(phases_participated = n_distinct(learningPhase)) %>%  
+  ggplot(aes(x = phases_participated)) +
+  geom_bar(fill = "lightblue") +
+  labs(title = "Distribution of participation in learning phases",
+       x = "Number of phases participated",
+       y = "Count of birds") +
+  theme_minimal()
+
+```
+
+
+### 6.4 Correcting learning phase assignments
+
+To reassign the new phases, we need to make sure the data is ordered by species, learning phase, and bird ID first.
+
+```{r}
+df <- df %>% 
+  arrange(species, learningPhase, btoID)
+head(df)
+```
+
+Then, we assign each bird its corrected learning phase by numbering the sequence of participation and reassigning the appropriate phase:
+
+```{r}
+df2 <- df %>%
+  group_by(btoID) %>%
+  mutate(totalPhaseCount = row_number()) %>%  #create a new column counting total number of phases participated 
+  ungroup() %>%
+  mutate(correctedPhase = case_when(
+    totalPhaseCount == 1 ~ "IL", #if the phase count is 1, this means that phase is IL for that individual (IL only)
+    totalPhaseCount == 2 ~ "RL1", # IL+RL1, 2 phases total
+    totalPhaseCount == 3 ~ "RL2")) %>% # IL+RL1+RL2, 3 phases total
+  select(-totalPhaseCount) #remove phase count column
+```
+
+These correction makes sure that birds are classified based on their actual learning experience rather than the experimental phase they happened to start using feeders. This new assignments will allow us to analyse the individual differences in cognitive abilities while accounting for differences in individual learning trajectories.
+
+You can directly compare the learningPhase (before correction) and correctedPhase (after correction) in the existing df:
+
+```{r}
+df2 %>%
+  gather(key = "phaseType", value = "phase",  
+         learningPhase, correctedPhase) %>% #create two new columns to get long format from learningpHase and correctedPhase
+  mutate(phaseType = recode(phaseType,
+                            learningPhase = "Before correction",
+                            correctedPhase = "After correction")) %>% #rename 
+  mutate(phaseType = factor(phaseType, 
+                            levels = c("Before correction", 
+                                       "After correction")))  %>% #factor it so bars are ordered as before and after in plot
+  ggplot(aes(x = phase, fill = phaseType)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Comparison of participation to each phase before and after correction",
+       x = "Learning phase",
+       y = "Number of birds",
+       fill = " ") +
+  theme_minimal()
+```
+
+You can now see now there are a lot of birds started using feeders at different times, resulting with them having participated fewer learning phases. 
+
+If you wish to save this data, you could do that now.
+
+```{r}
+path_out = 'F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles'
+write.csv(df2, file.path(path_out,'criterion_phasesCorrected.csv'))
+```
+
