@@ -1,16 +1,20 @@
 ---
 title: "**Tutorial for RFID Data Handling in R**"
 author: "Gabrielle Davidson - School of Biological Sciences, University of East Anglia"
-date: "2025-03-17"
-output: html_document
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    mathjax: "default"
+    toc: true
+    number_sections: true
+    toc_float: true
 ---
 # Tutorial 1: Requirements and Resources
 
-#### Welcome to The RFID Tutorials - a set of R scripts with example data to get you started with performing ecological research with wild birds using autonomous data collection methods. Here you will learn the basics of manipulating and preparing data collected from RFID computerised feeders that will later be used for statistical testing (not covered here). You will use R programming to manipulate so-called streams of data into numbers that represent each individual birds' behaviour. Some prior knowledge of R's basic functions and uses is a pre-requisite, particularly if you are to flexibly apply these tutorials to your unique datasets. 
+Welcome to The RFID Tutorials - a set of R scripts with example data to get you started with performing ecological research with wild birds using autonomous data collection methods. Here you will learn the basics of manipulating and preparing data collected from RFID computerised feeders that will later be used for statistical testing (not covered here). You will use R programming to manipulate so-called streams of data into numbers that represent each individual birds' behaviour. Some prior knowledge of R's basic functions and uses is a pre-requisite, particularly if you are to flexibly apply these tutorials to your unique datasets. 
 
-### 1.1 Installations
+## Installations
 Downlaod the latest version of **[R](https://cran.r-project.org/bin/)**  and **[R Studio](https://posit.co/download/rstudio-desktop/)** according to your operating system. Be sure to install R before installing R studio.
-
 
 
 ```{r eval=FALSE}
@@ -36,7 +40,7 @@ Sometimes the error message will specify a package that could not be installed o
 Attempt to install missing packages before installing the package(s) above. 
 Make sure your R version is up to date and that it was installed prior to installing/updating r studio
 
-### 1.2 Check R packages installed by loading them
+## Check R packages installed by loading them
 ```{r eval=FALSE}
 #load the above packages to check they installed properly 
 library(tidyverse)
@@ -51,12 +55,12 @@ library(magrittr)
 
 ```
 
-### 1.3 Download raw datasets necessary for the tutorial and save them in a workspace folder
+## Download raw datasets necessary for the tutorial and save them in a workspace folder
 Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
 
 Create and name a workspace. This is a folder on your computer that tells R where to obtain files. 
 
-### 1.4 Download useful R cheat sheets
+## Download useful R cheat sheets
 
 [R Markdown Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
 
@@ -66,9 +70,9 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 [lubridate Cheat Sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf)
 
-### 1.5 Useful literature
+## 1.5 Useful literature
 
-#### Davidson papers using RFID to measure behaviour in wild great tits and blue tits at feeders and nestboxes: 
+**Davidson papers using RFID to measure behaviour in wild great tits and blue tits at feeders and nestboxes:** 
 
 [Multiple factors affect discrimination learning performance, but not between-individual variation, in wild mixed-species flocks of birds](https://doi.org/10.1098/rsos.192107)
 
@@ -76,7 +80,7 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 [Inhibitory control performance is repeatable over time and across contexts in a wild bird population](https://doi.org/10.1016/j.anbehav.2022.02.007)
 
-#### Other groups using RFID to measure behaviour in alternative ways: 
+**Other groups using RFID to measure behaviour in alternative ways:** 
 
 [Inferring dominance interactions from automatically recorded temporal data](https://doi.org/10.1111/eth.12720)
 
@@ -84,7 +88,7 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 [Spatial, temporal and individual-based differences in nest-site visits and subsequent reproductive success in wild great tits]( https://doi.org/10.1111/jav.01740)
 
-#### General autonomous data collection methodology and approaches: 
+**General autonomous data collection methodology and approaches:** 
 
 [Broad-scale applications of the Raspberry Pi: A review and guide for biologists](https://doi.org/10.1111/2041-210X.13652) 
 
@@ -96,15 +100,14 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 [Shazam for bats: Internet of Things for continuous real-time biodiversity monitoring](https://doi.org/10.1049/smc2.12016)
 
-### END OF 1. RFID Tutorial: Introduction to RFID Use and Data Handling 
 
 ---
 
 # Tutorial 2: Introduction to RFID Use and Data Handling
 
-## 1. Get set up
+## Get set up
 
-### Open R Studio
+Open R Studio
 
 ### Check R packages installed
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
@@ -122,7 +125,7 @@ library(magrittr) #may not need this
 ### Download resources necessary for the workshop
 Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
 
-## 2.1 Introduction to RFID for animal behaviour
+## Introduction to RFID for animal behaviour
 
 **Considerations when designing RFID devices:** 
 
@@ -165,9 +168,9 @@ In both cases, and especially in Option 2, there is a risk that you accidentally
 
 Another option is to create an R function. This means you specify arguments (e.g. file names, dataframes) at the top of the function, rather than editing multiple lines of code to accommodate the appropriate files/dataframes. The latter can lead to errors if you don't update one or more of the dataframe or file names accordingly. 
 
-## 2.2 Importing RFID data and generating master database
+## Importing RFID data and generating master database
 
-### 2.2.1 working directory and files
+### working directory and files
 Imagine you have collected data from three RFID feeders deployed in the field. When you save the data from the SD card, you save it according to the date you collected it (YYMMDD), and the feeder ID (in this case F01, F02, F03)
 
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE} 
@@ -199,7 +202,7 @@ list.files(path2, pattern=NULL, all.files=FALSE,
 what you are seeing are a number of files that start with a alphanumberic code, followed by two letters. "C1935" refers to the feeder's hardware ID code. This can never change. The last two letters refer to the output file type. For example, FD refers to "feeder door" and has information about whether the servo door opened (o) or stayed closed (c) upon detection of a bird. For our purposes, we will focus on the RT files only. 
 
 
-### 2.2.2 Viewing files and preparing for compiling them into a single dataframe
+### Viewing files and preparing for compiling them into a single dataframe
 
 ```{r}
 
@@ -221,7 +224,7 @@ You can see the ID is c1935 which matches our folder name. Dur Clks Freq and Edg
 the most important headers for downstream analyses are Date, Hmsec, ID and TagID_hex. But we will keep all headers.
 you should notice that although we have the ID of the feeder, that does not provide us with any information about where the feeder was located in our experimental design which is fundamental to analyses. If you are to compile a dataframe that contains data from multiple different feeders, you must know which data comes from which feeder. 
 
-### 2.2.3 Adding a column to indicate which feeder your data belongs to 
+### Adding a column to indicate which feeder your data belongs to 
 
 ```{r}
 
@@ -269,7 +272,7 @@ df3<-cbind(df3, feeder='F03') #add a column named feeder and have all the values
 
 ```
 
-### 2.2.4 bind rows from different data frames into a single dataframes
+### bind rows from different data frames into a single dataframes
 ```{r}
 #Because you have now indicated which feeder each line of data comes from, you can safely combine all dataframes into one. They all have the same number of headers, and the headers are spelled the same, so this can be done without any additional changes.
 
@@ -305,7 +308,7 @@ dfinal<-bind_rows(d220206,d220209)  #the order of the dfs as arguments will dete
 ```
 
 
-### 2 .4.1 Saving your work and returning to it later
+### Saving your work and returning to it later
 ```{r eval=FALSE, , echo=T}
 
 #by default, R will save to your current working directory. So lets change it to a higher directory than we are currently in. Otherwise it may be hard to find which subfolder to save into. You could also create a folder specifically for saving into. 
@@ -395,15 +398,14 @@ d220209<-bind_rows(df1,df2,df3)
 
 ```
 
-### END OF 2. RFID Tutorial: Introduction to RFID Use and Data Handling 
 
 ---
 
 # Tutorial 3: Introduction to RFID Data Filtering
 
-## 3. Get set up
+## Get set up
 
-### Open R Studio
+Open R Studio
 
 ### Check R packages installed
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
@@ -421,7 +423,7 @@ library(magrittr) #may not need this
 ### Download resources necessary for the workshop
 Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
 
-## 3.1 Import your dataset to your environment from your working directory. 
+## Import your dataset to your environment from your working directory. 
 
 ```{r echo=T,  error=FALSE, warning=FALSE, message=FALSE} 
 require("knitr")
@@ -443,9 +445,9 @@ names(df)
 
 ```
 
-## 3.2 Data filtering
+## Data filtering
 
-### 3.2.1 Remove misreads (i.e. erroneous TagID_hex values)
+### Remove misreads (i.e. erroneous TagID_hex values)
 Ocassionally the RFID reader will incorrectly read an tag. This may be because the bird does not properly land on the perch to feed, and so these 'misreads' can be removed. 
 To remove misreads, we need to match the feeder data against known tagged bird IDs (i.e. Passive Integrative Transponder (PIT) tag numbers, aka TagID_hex). I have provided a file with a list of PIT tags and corresponding metadata (species, age, sex etc.). Note this data is NOT from the UEA population. 
 
@@ -481,7 +483,7 @@ Now you can merge dataframes by their shared TagID_hex value. In addition, if th
 df1 <- merge(df, PIT, by = "TagID_hex", all = TRUE)
 df1[is.na(df1)] <- "NA"
 ```
-#We are only interested in the TagID_hex that was detected at the feeder, but not on our database. We will filter these into a new dataframe called missing. We extract these as values that did not have a BTO 
+We are only interested in the TagID_hex that was detected at the feeder, but not on our database. We will filter these into a new dataframe called missing. We extract these as values that did not have a BTO 
 ```{r}
 missing<-df1%>%
   filter(btoID=="NA")
@@ -533,7 +535,7 @@ rm(list = ls(all.names = TRUE))
 
 ```
 
-### 3.2.1 Filter repetitive RFID reads within a single visit
+### Filter repetitive RFID reads within a single visit
 
 A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.  
 
@@ -662,7 +664,7 @@ rm(list = ls(all.names = TRUE))
 
 ```
 
-## 3.3 Check for RFID malfunction. In otherwords, periods of missing data.
+## Check for RFID malfunction. In otherwords, periods of missing data.
 
 we have a dataframe with time since previous visit grouped by individual and by date. We would expect big time gaps across all individuals if a feeder was down. 
 
@@ -715,7 +717,7 @@ These three feeders have very different distributions of visits, and so this is 
 
 You will need to consider your experimental design and what is expected. In fact this data is from feeders that contained different food types and one feeder was only available for a short time period compared to the others. 
 
-## 3.4 Removing periods of missing data.
+## Removing periods of missing data.
 If one of the feeders malfunctioned for a day and the entire experiment depends on all feeders working in tandem, this may be good reason to remove data for this day, but see below. 
 ```{r}
 #first check the dates data was collected
@@ -754,15 +756,13 @@ df4<-df1%>%
 
 ```
 
-### END OF 3. RFID Tutorial: Introduction to RFID Data Filtering
-
 ---
 
 # Tutorial 4: Quantifying Feeder Visits
 
-## 4. Get set up
+## Get set up
 
-### Open R Studio
+Open R Studio
 
 ### Check R packages installed
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
@@ -780,7 +780,7 @@ library(magrittr) #may not need this
 ### Download resources necessary for the workshop
 Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
 
-## 4.1 Import your dataset to your environment from your working directory. 
+## Import your dataset to your environment from your working directory. 
 
 ```{r}
 
@@ -800,16 +800,16 @@ names(df)
 
 ```
 
-## 4.2 Total number of visits per feeder, per day
+## Total number of visits per feeder, per day
 ```{r}
-#a new dataframe that counts the total number of visits per feeder per individual, per date. 
+# a new dataframe that counts the total number of visits per feeder per individual, per date. 
 individualVisits<-df%>%
   count(feeder, TagID_hex, date, sort = TRUE) 
 
-#rename n column "visits"
+# rename n column "visits"
 names(individualVisits)[names(individualVisits) == "n"] <- "visits"  #rename columns
  names(individualVisits)
-#visualise the data on a figure using ggplot 
+# visualise the data on a figure using ggplot 
 
 individualVisits%>%
  ggplot(aes(x = TagID_hex, y = visits, color = feeder))+  #specify axis labels and groupings
@@ -819,7 +819,7 @@ individualVisits%>%
 #Note that each data point is a unique date. Therefore this plot gives you information not only on the number of visits they make on a given day, but also over how many days. 
 #Because of the outliers, it's difficult to resolve what is happening between 0 and 20 visits. 
 
-#Restrict axis limits and minimise datapoint overlap
+# Restrict axis limits and minimise datapoint overlap
 
 individualVisits%>%
  ggplot(aes(x = TagID_hex, y = visits, color = feeder))+  #specify axis labels and groupings
@@ -830,7 +830,7 @@ individualVisits%>%
  ylim(0, 25) + #specify axis limits
     geom_point(position = position_jitter(width = 0.3)) #jitter the points along a horizontal axis to minimise overlap
 
-#can also remove shape for visualization
+# can also remove shape for visualization
 
 individualVisits%>%
  ggplot(aes(x = TagID_hex, y = visits, color = feeder))+  #specify axis labels and groupings
@@ -841,7 +841,7 @@ individualVisits%>%
  ylim(0, 25) + #specify axis limits
     geom_point(position = position_jitter(width = 0.3))
 
-#a new dataframe that counts the proportion an individual visits a feeder relative to the other feeders, per day. 
+# a new dataframe that counts the proportion an individual visits a feeder relative to the other feeders, per day. 
 ProportionVisits<-individualVisits%>%
   group_by(TagID_hex, date)%>%
   arrange(TagID_hex)%>%
@@ -850,7 +850,7 @@ ProportionVisits<-individualVisits%>%
 
 ```
 
-## 4.3 Proportion of visits per feeder, per day
+## Proportion of visits per feeder, per day
 ```{r}
 
 #a new dataframe that counts the proportion an individual visits a feeder relative to the other feeders, per day. 
@@ -861,7 +861,7 @@ ProportionVisits<-individualVisits%>%
   ungroup() 
 
 
-#plot proportions. Better to use the original dataframe as the following code counts each line as a visit
+# plot proportions. Better to use the original dataframe as the following code counts each line as a visit
 
 ggplot(df,aes(x=factor(TagID_hex),fill=factor(feeder)))+ 
   geom_bar(position="fill")+
@@ -870,7 +870,7 @@ ggplot(df,aes(x=factor(TagID_hex),fill=factor(feeder)))+
   theme_bw() +   theme(panel.grid.major = element_blank(),
                        panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), 
                        panel.border = element_rect(linetype = "solid", colour = "black", size=.8)) +
-  #scale_fill_manual("Feeder", values = c("1" = "gray49", "0" = "gray84"))+
+  # scale_fill_manual("Feeder", values = c("1" = "gray49", "0" = "gray84"))+
   theme(text=element_text(size=12,  family="serif"),
         axis.ticks = element_line(colour = "black", size = .6)) +
   labs(x = "Bird ID") +
@@ -879,78 +879,33 @@ ggplot(df,aes(x=factor(TagID_hex),fill=factor(feeder)))+
 
 ```
 
-### **4.4 EXERCISE** Visits
-4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
+### **EXERCISE** Visits
+#### Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
 (hint: group_by)
 
-4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
+#### Create a new dataframe that excludes individuals that visited less than 5 times.
 (hint: section 3.5)
 
-4.4.3 rename the column of the number of visits to "totalVisits".
+#### rename the column of the number of visits to "totalVisits".
 
-4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
+#### create a figure of your choice representing the number of visits from your new dataframe.
 
-4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
+#### create a dataframe with a list of birds we consider participants and save it as a csv file.
 
-### **4.5 EXERCISE** - Time intervals 
+## **Exercise answers** 
 
-Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
 
-4.5.1 clear your global environment
-
-4.5.2 reload your database "filteredVisitsFeeders.txt"
-
-4.5.3 change the datetime column to be a POSIXct class 
-
-4.5.4 create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
-
-4.5.5 create a dataframe consisting of individuals that visited a feeder equal or less than 2 second after the previous visitor.
-
-4.5.6 create a dataframe of a list of unique individuals that have landed on a feeder within 2 second of the previous visitor
-
-### **4.6 EXERCISE** - Correct and incorrect visits
-
-4.6.1 Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
-(hint: filter, then cbind)
-
-### END OF 4. RFID Tutorial: Quantifying feeder visits 
-
----
-
-# Tutorial 4b: Exercise answers 
-
-## 4. Get set up
-
-### Open R Studio
-
-### Check R packages installed
-```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
-#load the following packages
-library(tidyverse)
-library(rmarkdown)
-library(dplyr)
-library(tidyr)
-library(lubridate)
-library(ggplot2)
-library(stringi) #may not need this
-library(magrittr) #may not need this
-
-```
-### Download resources necessary for the workshop
-Download the resources from **[my github page](https://github.com/DrGLDavidson/RFID-workshop)**
-
-### **4.4 EXERCISE ANSWERS** 
 ```{r}
 
-#clear the global environment so we don't have any conflicts with the next steps 
+# clear the global environment so we don't have any conflicts with the next steps 
 
 rm(list = ls(all.names = TRUE))
 
-#choose the appropriate working directory
+# choose the appropriate working directory
 
 setwd("F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles")
 
-#call your most recent dataset 
+# call your most recent dataset 
 
 df<-read.delim("Masterdf_noRepeats.txt", header=TRUE)
 head(df)
@@ -959,42 +914,51 @@ names(df)
 ```
 
 
-4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
-(hint: group_by)
-
-4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
-(hint: section 3.5)
-
-4.4.3 rename the column of the number of visits to "totalVisits".
-
-4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
-
-4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
-
-
 ```{r  }
 
-#4.4.1
+# Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
 individualvisits<-df%>%
   count(TagID_hex, sort = TRUE) 
-#4.4.2
+# Create a new dataframe that excludes individuals that visited less than 5 times
 individualvisits2<-individualvisits%>%
   filter(n >5)%>%
   select(TagID_hex,n)
 
-#4.4.3
+# rename the column of the number of visits to "totalVisits".
 names(individualvisits2)[names(individualvisits2) == "n"] <- "totalVisits"  
 
-#4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
+# create a figure of your choice representing the number of visits from your new dataframe.
 ggplot(individualvisits2, aes(x=totalVisits)) +geom_histogram(binwidth = 20) 
 
-#4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
+# create a dataframe with a list of birds we consider participants and save it as a csv file.
 participants <- unique(individualvisits2$TagID_hex)
 
 participants<-as.data.frame(participants)
-#write.csv(participants, file="FeederExperimentParticipants.csv"))
+# write.csv(participants, file="FeederExperimentParticipants.csv"))
 
 ```
+
+
+### **EXERCISE** - Time intervals 
+
+Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
+
+#### 4.5.1 clear your global environment
+
+#### 4.5.2 reload your database "filteredVisitsFeeders.txt"
+
+#### 4.5.3 change the datetime column to be a POSIXct class 
+
+#### 4.5.4 create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
+
+#### 4.5.5 create a dataframe consisting of individuals that visited a feeder equal or less than 2 second after the previous visitor.
+
+#### 4.5.6 create a dataframe of a list of unique individuals that have landed on a feeder within 2 second of the previous visitor
+
+
+
+
+---
 
 Extra code, not in the exercise, but perhaps useful: how many RFID devices an individual visits
 ```{r}
@@ -1006,43 +970,29 @@ IDFeeder<-IDFeeder%>%
 summary(IDFeeder$n)
 
 ```
-### 4.5 EXERCISE - Time intervals between visits among individuals
 
-Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
-
-4.5.1 clear your global environment
-
-4.5.2 reload your database "filteredVisitsFeeders.txt"
-
-4.5.3 change the datetime column to be a POSIXct class 
-
-4.5.4 create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
-
-4.5.5 create a dataframe consisting of individuals that visited a feeder equal or less than 2 second after the previous visitor.
-
-4.5.6 create a dataframe of a list of unique individuals that have landed on a feeder within 2 second of the previous visitor
+## **Exercise answers** 
 
 
 ```{r}
-# 4.5.1
+# clear your global environment
 rm(list = ls(all.names = TRUE))
 
-#4.5.2
 
-#choose the appropriate working directory
+# choose the appropriate working directory
 
 setwd("F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles")
 
-#call your most recent dataset 
+# call your most recent dataset 
 
 df<-read.delim("Masterdf_noRepeats.txt", header=TRUE)
 
-#4.5.3
+# change the datetime column to be a POSIXct class
 class(df$dateTime)
 df$dateTime <- as.POSIXct(df$dateTime)
 class(df$dateTime)
 
-#4.5.4
+# create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
 df1<-df %>%
   arrange(dateTime)%>%
   group_by(date, feeder) %>%
@@ -1050,21 +1000,26 @@ df1<-df %>%
   arrange(dateTime)%>%
   ungroup()
 
-#4.5.5
+# create a dataframe consisting of individuals that visited a feeder equal or less than 2 second after the previous visitor.
 df1$timeBetweenID <- as.numeric(as.character(df1$timeBetweenID)) 
 class(df1$timeBetweenID)
 
 df2<-df1%>%
   filter(timeBetweenID <=2)
 
-#4.5.6
+# create a dataframe of a list of unique individuals that have landed on a feeder within 2 second of the previous visitor
 twosec<-unique(df2$TagID_hex)
 uniqueDisplacers<-as.data.frame(twosec)
 
 
 ```
 
-### 5.4 EXERCISE - Correct and incorrect visits
+### **EXERCISE** - Correct and incorrect visits
+
+#### Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
+(hint: filter, then cbind)
+
+## **Exercise answers** 
 
 Imagine feeder01 is rewarded and feeder02 and feeder03 are not rewarded. How would you include a column called "correctChoice" where visits to feeder01 contain the character "Y" and visits to the incorrect feeders contain the character "N"
 ```{r}
@@ -1087,15 +1042,14 @@ df3<-bind_rows(F01Y, F02N, F03N)
 
 ```
 
-### END OF 4. RFID Tutorial: Exercise answers
 
 ---
 
-# Tutorial 5: Define visit type and learning
+# Define visit type and learning
 
-## 5. Get set up
+## Get set up
 
-### Open R Studio
+Open R Studio
 
 ### Check R packages installed
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
@@ -1118,7 +1072,7 @@ library(zoo) #rolling function
 ### Download resources necessary for the workshop
 Download the resources from **[my github repository](https://github.com/DrGLDavidson/RFID-workshop)**
 
-## 5.1 import your dataset to your environment from your working directory. 
+## Import your dataset to your environment from your working directory. 
 
 ```{r}
 
@@ -1138,7 +1092,7 @@ names(df)
 
 ```
 
-## 5.2 Quantifying correct and incorrect visits (i.e. if a bird landed on its assigned feeder according to ListA logic)
+## Quantifying correct and incorrect visits (i.e. if a bird landed on its assigned feeder according to ListA logic)
 
 ```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
 #how many individual tags (birds) in our dataset
@@ -1191,7 +1145,7 @@ write.table(df5, file = "Masterdf_correctVisits.txt",sep="\t",row.names=FALSE)
 
 ```
 
-## 5.3 Quantifying learning (i.e. if a bird visits its assigned feeder at a given criterion).
+## Quantifying learning (i.e. if a bird visits its assigned feeder at a given criterion).
 ### In this example, we will use the criterion of 80% correct visits, across a minimum of 20 visits. 
 
 First, define participants as birds that have visited at least 20 times. 
@@ -1291,10 +1245,207 @@ write.csv(results5, file.path(path_out,'birdsReachingCriterion_5visits.csv'))
 
 ```
 
-### END OF 5. RFID Tutorial: Define visit type and learning
 
 ```{r}
 sessionInfo()
+```
+# Correcting for variation in participation at different learning phases
+
+## Get set up
+
+Open R Studio
+
+### Check R packages installed
+```{r echo=T, results='hide', error=FALSE, warning=FALSE, message=FALSE}
+#load the following packages
+library(rmarkdown)
+library(tidyverse)
+```
+
+### Download resources necessary for the workshop
+
+In the previous chapters, we worked with a dataset spanning five days of an experiment. However, learning experiments in the field often run for longer, and individuals typically progress through a series of distinct learning phases.
+
+For this chapter, we’ll use a new dataset called *criterion_multiplePhases.txt*, available in the GitHub repository. This dataset includes individuals from multiple learning phases — not just initial learning, but also one or more reversal learning phases.
+
+Download the new dataset from **[here](https://github.com/DrGLDavidson/RFID-workshop)**.
+
+## Import your dataset to your environment from your working directory.
+
+```{r}
+#clear the global environment so we don't have any conflicts with the next steps 
+
+rm(list = ls(all.names = TRUE))
+
+#choose the appropriate working directory
+
+setwd("F:/RWorkspace/GitHub/RFID-workshop/data/")
+
+#call your most recent dataset 
+
+df<-read.delim("criterion_multiplePhases.txt", header=TRUE)
+head(df)
+names(df)
+```
+
+One of the columns in this dataset is learningPhase. This column contains labels for each individual’s phase in the experiment, including one initial learning phase **(IL)**, followed by two reversal learning phases **(RL1 and RL2)**.
+
+During an experiment, as data is collected over time, multiple phases of the experiment may occur. Therefore, when conducting your own experiments, you will need to add a column to your dataset that identifies which learning phase the data corresponds to. This step is important for accurately labeling and interpreting your data (see Tutorial 2 for more details on data upload and organisation).
+
+If you are following this tutorial with your own real data, keep in mind that the *criterion for each learning phase is calculated separately.* Your dataset should look similar to the ***df*** object after calculating *criterion* as explained in Chapter 5 seperately for each learning phase and merging it with other bird itentifications such as species, sex i.e.
+
+### Understanding learning phases in cognitive experiments
+
+In associative learning experiments, individuals are often tested across multiple phases, each designed to probe different aspects of cognition.
+
+The first phase is *initial learning (IL)*. Here, individuals are introduced to a stimulus-reward contingency. For example, in an experiment setup with multiple feeders, a single feeder provides a food reward to an individual. Over several days, individuals learn/or fail to learn this association through repeated visits.
+
+Once this association is established, or designated time for that phase passes, the experimental conditions change: the previously rewarded stimulus becomes unrewarded, and vice versa. This is known as *reversal learning (RL)*. Reversal learning assesses the ability to adapt when prior rules no longer apply.
+
+
+In our RFID-based field experiments, during IL, all birds are assigned randomly to a feeder associated with a reward. After around 5–10 days (depending on the experimental setup), the contingency is reversed, and birds are reassigned to different feeders. This process can be repeated to include multiple reversals (e.g., RL1, RL2), providing insights into how learning patterns change over time and across contexts.
+
+
+### Why we need to correct learning phase labels
+
+In typical learning experiments conducted in controlled lab environments, all individuals can be exposed to learning phases simultaneously and under identical conditions. But in field experiments, especially those involving voluntary participation like ours, individuals do not always enter the experiment at the same time.
+
+This introduces a challenge. Our datasets typically label visits based on the planned schedule of the experiment — for example in ***df*** :
+
+* IL: 13–17 January
+
+* RL1: 17–22 January
+
+* RL2: 22–27 January
+
+However, some birds may not have participated during IL or RL1, and only began interacting with the feeder setup during RL2. If we rely solely on the experiment schedule to assign phase labels, we might wrongly assume that these birds are in their second reversal, when in fact they are just beginning to learn the original task.
+
+This matters because each individual's learning history influences how we interpret their behaviour. A visit pattern from a bird in its first learning phase means something different than the same pattern from a bird in its third phase.
+
+To make meaningful comparisons, we need to relabel learning phases on a per-bird basis, based on when each individual first began participating. This ensures that we accurately capture the learning trajectory of each bird, rather than imposing a structure based on the experiment timeline alone.
+
+
+## Identifying learning set participation
+
+To begin, let's visualise the participation to each bird in each phase of the experiment. 
+
+```{r, fig.width = 9, fig.height = 5, dpi = 300}
+# change the 'learningPhase' and 'btoID' columns to factors for better visualization
+df$learningPhase <- factor(df$learningPhase, levels = c("IL", "RL1", "RL2"))
+df$btoID <- as.factor(df$btoID)
+
+#plot a geom tile
+ggplot(df, 
+       aes(x = btoID, 
+           y = learningPhase, 
+           fill = learningPhase)) +
+  geom_tile(color = "white", 
+            width = 1,
+            height = 0.9) +
+  labs(title = "Bird participation across learning phases",
+    x = "BTO ID",
+    y = "Learning phase") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 5), #x axis text aesthetics
+        axis.text.y = element_text(size = 10), #y axis text aesthetics
+        legend.position = "none")
+```
+
+As seen in the plot, while most birds participated in all three phases, some individuals missed certain learning phases. For these individuals, we need to correct their actual learning trajectories.
+
+### EXERCISE
+
+To understand the situation better, create: 
+
+#### A bar chart visualising number of birds participated in each learning phase
+
+#### A bar chart visualising number of learning phases earch bird participated
+
+## Exercise answers 
+
+```{r}
+# A bar chart visualising number of birds participated in each learning phase
+df %>%
+  group_by(learningPhase) %>%
+  summarise(n_birds = n_distinct(btoID)) %>%
+  ggplot(aes(x = learningPhase, 
+             y = n_birds)) +
+  geom_bar(stat = "identity", 
+           fill = "lightblue") +
+  labs(title = "Number of birds in each learning phase",
+    x = "Learning phase",
+    y = "Number of birds") +
+  theme_minimal()
+
+# A bar chart visualising number of learning phases earch bird participated
+
+df %>%
+  group_by(btoID, species) %>%
+  summarise(phases_participated = n_distinct(learningPhase)) %>%  
+  ggplot(aes(x = phases_participated)) +
+  geom_bar(fill = "lightblue") +
+  labs(title = "Distribution of participation in learning phases",
+       x = "Number of phases participated",
+       y = "Count of birds") +
+  theme_minimal()
+
+```
+
+
+### Correcting learning phase assignments
+
+To reassign the new phases, we need to make sure the data is ordered by species, learning phase, and bird ID first.
+
+```{r}
+df <- df %>% 
+  arrange(species, learningPhase, btoID)
+head(df)
+```
+
+Then, we assign each bird its corrected learning phase by numbering the sequence of participation and reassigning the appropriate phase:
+
+```{r}
+df2 <- df %>%
+  group_by(btoID) %>%
+  mutate(totalPhaseCount = row_number()) %>%  #create a new column counting total number of phases participated 
+  ungroup() %>%
+  mutate(correctedPhase = case_when(
+    totalPhaseCount == 1 ~ "IL", #if the phase count is 1, this means that phase is IL for that individual (IL only)
+    totalPhaseCount == 2 ~ "RL1", # IL+RL1, 2 phases total
+    totalPhaseCount == 3 ~ "RL2")) %>% # IL+RL1+RL2, 3 phases total
+  select(-totalPhaseCount) #remove phase count column
+```
+
+These correction makes sure that birds are classified based on their actual learning experience rather than the experimental phase they happened to start using feeders. This new assignments will allow us to analyse the individual differences in cognitive abilities while accounting for differences in individual learning trajectories.
+
+You can directly compare the learningPhase (before correction) and correctedPhase (after correction) in the existing df:
+
+```{r}
+df2 %>%
+  gather(key = "phaseType", value = "phase",  
+         learningPhase, correctedPhase) %>% #create two new columns to get long format from learningpHase and correctedPhase
+  mutate(phaseType = recode(phaseType,
+                            learningPhase = "Before correction",
+                            correctedPhase = "After correction")) %>% #rename 
+  mutate(phaseType = factor(phaseType, 
+                            levels = c("Before correction", 
+                                       "After correction")))  %>% #factor it so bars are ordered as before and after in plot
+  ggplot(aes(x = phase, fill = phaseType)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Comparison of participation to each phase before and after correction",
+       x = "Learning phase",
+       y = "Number of birds",
+       fill = " ") +
+  theme_minimal()
+```
+
+You can now see now there are a lot of birds started using feeders at different times, resulting with them having participated fewer learning phases. 
+
+If you wish to save this data, you could do that now.
+
+```{r}
+path_out = 'F:/RWorkspace/GitHub/RFID-workshop/data/outputFiles'
+write.csv(df2, file.path(path_out,'criterion_phasesCorrected.csv'))
 ```
 
 
