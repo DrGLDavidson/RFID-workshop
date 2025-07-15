@@ -9,7 +9,7 @@ output:
     number_sections: true
     toc_float: true
 ---
-# Tutorial 1: Requirements and Resources
+# Requirements and Resources
 
 Welcome to The RFID Tutorials - a set of R scripts with example data to get you started with performing ecological research with wild birds using autonomous data collection methods. Here you will learn the basics of manipulating and preparing data collected from RFID computerised feeders that will later be used for statistical testing (not covered here). You will use R programming to manipulate so-called streams of data into numbers that represent each individual birds' behaviour. Some prior knowledge of R's basic functions and uses is a pre-requisite, particularly if you are to flexibly apply these tutorials to your unique datasets. 
 
@@ -70,7 +70,7 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 [lubridate Cheat Sheet](https://rawgit.com/rstudio/cheatsheets/main/lubridate.pdf)
 
-## 1.5 Useful literature
+## Useful literature
 
 **Davidson papers using RFID to measure behaviour in wild great tits and blue tits at feeders and nestboxes:** 
 
@@ -103,7 +103,7 @@ Create and name a workspace. This is a folder on your computer that tells R wher
 
 ---
 
-# Tutorial 2: Introduction to RFID Use and Data Handling
+# Introduction to RFID Use and Data Handling
 
 ## Get set up
 
@@ -289,7 +289,7 @@ rm(df1,df2,df3) #this should remove them from your environment.
 
 ```
 
-### **2.3 EXERCISE** 
+### **EXERCISE** 
 There are three more files in the folder that come from different feeders that need to be added to the master database.
 
 Make sure to 
@@ -356,7 +356,7 @@ Additional resources for independent discovery of concepts and code:
 - chatgpt
 - [R Markdown Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
 
-### **2.5 EXERCISE** 
+### **EXERCISE** 
 
 Using the code you produced earlier, create a short R Markdown file and knit it. 
 
