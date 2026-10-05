@@ -242,19 +242,14 @@ ggplot(df5, aes(x=timeSincePreviousVisit)) +geom_histogram(binwidth = 1)
 
 #Filter dataset to remove visits that were within 2 seconds of eachother
 
-#note that there are NAs because it was the first visit of the dataframe so we can replace that with 'firstVisit'
-df4$timeSincePreviousVisit[is.na(df4$timeSincePreviousVisit)] <- 'firstVisit' 
-
-#to ensure we do not loose these visits - i think???? NO THIS JUST DUPLICATES DATA
-#df6<-df4%>%
-  #filter(timeSincePreviousVisit=='firstVisit')
+#note that there are NAs because it was the first visit of that bird to that feeder on that date. 
+#Keep the NAs (do NOT replace them with text) so the column stays numeric and seconds can still be calculated/compared later.
+#filter() drops NAs by default, so we must explicitly keep them with is.na()
 
 df6<-df4%>%
-  filter(timeSincePreviousVisit>2)
-#we need to make the column timeSincePreviousVisit a character back from numerical in order to bind with df5, which is a character string
-df6$timeSincePreviousVisit <- as.character(df6$timeSincePreviousVisit)
+  filter(is.na(timeSincePreviousVisit) | timeSincePreviousVisit>2)
 
-df7<-bind_rows(df6)%>%
+df7<-df6%>%
   arrange(dateTime, TagID_hex,feeder)
 view(df7)
 
