@@ -537,7 +537,9 @@ rm(list = ls(all.names = TRUE))
 
 ### Filter repetitive RFID reads within a single visit
 
-A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.  
+A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.
+
+**SKIP THIS IF YOU ARE QUANTIFYING TOTAL PERCH TIME.** Filtering repeated reads removes the information needed to estimate how long a bird stayed on the perch. If that is your aim, see the section on total time on the perch in Tutorial 4.  
 
 ```{r}
 #As we will be working with time, we need to check how our dataframe is named and organised
@@ -874,20 +876,20 @@ ggplot(df,aes(x=factor(TagID_hex),fill=factor(feeder)))+
 
 ```
 
-### **EXERCISE** Visits
-#### Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
+## **EXERCISE** Visits
+### Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
 (hint: group_by)
 
-#### Create a new dataframe that excludes individuals that visited less than 5 times.
+### Create a new dataframe that excludes individuals that visited less than 5 times.
 (hint: section 3.5)
 
-#### rename the column of the number of visits to "totalVisits".
+### rename the column of the number of visits to "totalVisits".
 
-#### create a figure of your choice representing the number of visits from your new dataframe.
+### create a figure of your choice representing the number of visits from your new dataframe.
 
-#### create a dataframe with a list of birds we consider participants and save it as a csv file.
+### create a dataframe with a list of birds we consider participants and save it as a csv file.
 
-## **Exercise answers** 
+**Exercise answers**
 
 
 ```{r}
@@ -934,21 +936,65 @@ participants<-as.data.frame(participants)
 ```
 
 
-### **EXERCISE** - Time intervals 
+## Total time on the perch
+
+The visit counts above come from `Masterdf_noRepeats.txt`, where repeated reads within 2 seconds were removed (see Tutorial 3). That file cannot tell us how long a bird stayed on the perch, because the repeated reads are what record it. To estimate perch time, we instead load `Masterdf_noMisreads.txt`, which has the misreads removed but still contains the repeated reads.
+
+In Tutorial 3 we used 2 seconds as the cut off because the read-frequency plot showed that most repeated reads from a bird sitting on the perch are within 2 seconds of each other, and this matches most of the literature. We apply the same rationale here: consecutive reads from the same bird at the same feeder are treated as one perch visit when they are no more than 2 seconds apart, and a gap longer than 2 seconds starts a new visit. Duration is estimated from the first to the last read in each visit, so a visit with one read has an estimated duration of 0 seconds.
+
+Note that the reader only logs a read every so often, so a bird sitting on the perch can occasionally be read more than 2 seconds apart. Those reads will be split into separate visits and the durations will be underestimates. If you change the threshold, justify it from your own data and keep it consistent with the one you used in Tutorial 3.
+
+This analysis does not feed into the later tutorials.
+
+```{r}
+#load the dataset that still contains repeated reads
+dfAllReads<-read.delim("Masterdf_noMisreads.txt", header=TRUE)
+
+#rename the date columns and create a date from the feeder timestamp, as in Tutorial 3
+names(dfAllReads)[names(dfAllReads) == "date"] <- "dateRinged"
+names(dfAllReads)[names(dfAllReads) == "time"] <- "timeRinged"
+names(dfAllReads)[names(dfAllReads) == "Date"] <- "dateTime"
+
+dfAllReads<-dfAllReads%>%
+  mutate(dateTime=ymd_hms(dateTime),
+         date=as.Date(dateTime))
+
+#group consecutive reads from each bird at each feeder into perch visits
+perchVisits<-dfAllReads%>%
+  arrange(dateTime)%>%
+  group_by(date, feeder, TagID_hex)%>%
+  mutate(timeSincePreviousRead=as.numeric(difftime(dateTime, lag(dateTime), units="secs")),
+         perchVisit=cumsum(is.na(timeSincePreviousRead) | timeSincePreviousRead>2))%>%
+  group_by(date, feeder, TagID_hex, perchVisit)%>%
+  summarise(btoID=first(btoID),
+            species=first(species),
+            perchStart=min(dateTime),
+            perchEnd=max(dateTime),
+            perchDurationSeconds=as.numeric(difftime(max(dateTime), min(dateTime), units="secs")),
+            numberOfReads=n(),
+            .groups="drop")%>%
+  arrange(date, TagID_hex, feeder, perchStart)
+
+View(perchVisits)
+
+write.table(perchVisits, file = "Masterdf_perchDuration.txt",sep="\t",row.names=FALSE)
+```
+
+## **EXERCISE** - Time intervals
 
 Previously we created a column that indicated how many seconds had passed since an individual's previous visit per day. A similar approach can be taken to calculate intervals between visits between individuals (i.e. how long has passed since the previous birds' visit)
 
-#### 4.5.1 clear your global environment
+### clear your global environment
 
-#### 4.5.2 reload your database "filteredVisitsFeeders.txt"
+### reload your database "filteredVisitsFeeders.txt"
 
-#### 4.5.3 change the datetime column to be a POSIXct class 
+### change the datetime column to be a POSIXct class
 
-#### 4.5.4 create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
+### create a new column that calculates the time difference from the previous row of a dataframe grouped by date and feeder. Dont forget to use the argument arrange() so the timedate is sequential in your dataframe
 
-#### 4.5.5 create a dataframe consisting of individuals that visited a feeder equal or less than 2 second after the previous visitor.
+### create a dataframe consisting of individuals that visited a feeder equal or less than 2 second after the previous visitor.
 
-#### 4.5.6 create a dataframe of a list of unique individuals that have landed on a feeder within 2 second of the previous visitor
+### create a dataframe of a list of unique individuals that have landed on a feeder within 2 second of the previous visitor
 
 
 
@@ -966,7 +1012,7 @@ summary(IDFeeder$n)
 
 ```
 
-## **Exercise answers** 
+**Exercise answers**
 
 
 ```{r}
@@ -1009,12 +1055,12 @@ uniqueDisplacers<-as.data.frame(twosec)
 
 ```
 
-### **EXERCISE** - Correct and incorrect visits
+## **EXERCISE** - Correct and incorrect visits
 
-#### Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
+### Create a column called "correctChoice" where visits to F01 contain the character "Y" and visits to the other incorrect feeders contain the character "N"
 (hint: filter, then cbind)
 
-## **Exercise answers** 
+**Exercise answers**
 
 Imagine feeder01 is rewarded and feeder02 and feeder03 are not rewarded. How would you include a column called "correctChoice" where visits to feeder01 contain the character "Y" and visits to the incorrect feeders contain the character "N"
 ```{r}
