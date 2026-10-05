@@ -138,7 +138,9 @@ rm(list = ls(all.names = TRUE))
 
 ### 3.2.1 Filter repetitive RFID reads within a single visit
 
-A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.  
+A common goal in quantifying bird behaviour is to extract the number of visits a bird makes to a feeder. Due to the nature of the RFID device, multiple rows will be recorded if the bird sits on the perch while feeding, yet this should be considered a single visit.
+
+**SKIP THIS IF YOU ARE QUANTIFYING TOTAL PERCH TIME.** Filtering repeated reads removes the information needed to estimate how long a bird stayed on the perch. If that is your aim, see section 4.5 in the next tutorial.  
 
 ```{r}
 #As we will be working with time, we need to check how our dataframe is named and organised
