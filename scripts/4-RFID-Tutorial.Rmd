@@ -123,24 +123,11 @@ ggplot(df,aes(x=factor(TagID_hex),fill=factor(feeder)))+
 
 ```
 
-### **4.4 EXERCISE** Visits
-4.4.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
-(hint: group_by)
-
-4.4.2 Create a new dataframe that excludes individuals that visited less than 5 times.
-(hint: section 3.5)
-
-4.4.3 rename the column of the number of visits to "totalVisits".
-
-4.4.4 create a figure of your choice representing the number of visits from your new dataframe.
-
-4.4.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
-
-## 4.5 Total time on the perch 
+## 4.4 Total time on the perch per visit, per day
 
 The visit counts above come from `Masterdf_noRepeats.txt`, where repeated reads within 2 seconds were removed (section 3.2.1). That file cannot tell us how long a bird stayed on the perch, because the repeated reads are what record it. To estimate perch time, we instead load `Masterdf_noMisreads.txt`, which has the misreads removed but still contains the repeated reads.
 
-In section 3.2.1 we used 2 seconds as the cut off because the read-frequency plot showed that most repeated reads from a bird sitting on the perch are within 2 seconds of each other, and this matches most of the literature. We apply the same rationale here: consecutive reads from the same bird at the same feeder are treated as one perch visit when they are no more than 2 seconds apart, and a gap longer than 2 seconds starts a new visit. Duration is estimated from the first to the last read in each visit, so a visit with one read has an estimated duration of 0 seconds.
+We estimate duration separately for each bird, feeder, and day. In section 3.2.1 we used 2 seconds as the cut off because the read-frequency plot showed that most repeated reads from a bird sitting on the perch are within 2 seconds of each other, and this matches most of the literature. We apply the same rationale here: consecutive reads from the same bird at the same feeder are treated as one perch visit when they are no more than 2 seconds apart, and a gap longer than 2 seconds starts a new visit. Duration is estimated from the first to the last read in each visit, so a visit with one read has an estimated duration of 0 seconds.
 
 Note that the reader only logs a read every so often, so a bird sitting on the perch can occasionally be read more than 2 seconds apart. Those reads will be split into separate visits and the durations will be underestimates. If you change the threshold, justify it from your own data and keep it consistent with the one you used in 3.2.1.
 
@@ -179,6 +166,19 @@ View(perchVisits)
 
 write.table(perchVisits, file = "Masterdf_perchDuration.txt",sep="\t",row.names=FALSE)
 ```
+
+### **4.5 EXERCISE** Visits
+4.5.1 Create a dataframe of the total visits per individual across the whole of your experiment, irrespective of feeder.
+(hint: group_by)
+
+4.5.2 Create a new dataframe that excludes individuals that visited less than 5 times.
+(hint: section 3.5)
+
+4.5.3 rename the column of the number of visits to "totalVisits".
+
+4.5.4 create a figure of your choice representing the number of visits from your new dataframe.
+
+4.5.5 create a dataframe with a list of birds we consider participants and save it as a csv file.
 
 ### **4.6 EXERCISE** - Time intervals 
 
